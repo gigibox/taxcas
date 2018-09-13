@@ -1,0 +1,38 @@
+info:
+  contact: {}
+  license: {}
+paths:
+  /api/v1/admin/cert/add:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"success": bool,"data":[]}'
+          schema:
+            type: string
+      summary: 添加证书
+  /api/v1/admin/cert/upload_image:
+    post:
+      parameters:
+      - {}
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"success": bool,"data":{"image_save_url":"upload/images/96a.jpg",
+            "image_url": "http://..."}'
+          schema:
+            type: string
+      summary: 上传图片
+  /api/v1/admin/certs:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"success": bool,"data":[]}'
+          schema:
+            type: string
+      summary: 获取证书列表
+swagger: "2.0"

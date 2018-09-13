@@ -66,6 +66,15 @@ func AddCert(c *gin.Context) {
 	appG.Response(http.StatusOK, isAdded, e.SUCCESS, err)
 }
 
+// @Summary 预览证书
+// @Produce  json
+// @Param image post file true "图片文件"
+// @Success 200 {string} json "{"code":200,"success": bool,"data":{"image_save_url":"upload/images/96a.jpg", "image_url": "http://..."}"
+// @Router /api/v1//admin/cert/preview [get]
+func PreviewImage(c *gin.Context) {
+
+}
+
 // @Summary 上传图片
 // @Produce  json
 // @Param image post file true "图片文件"

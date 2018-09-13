@@ -8,7 +8,8 @@ import (
 
 	"github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
-
+	_ "taxcas/docs"
+	
 	"taxcas/pkg/export"
 	"taxcas/pkg/setting"
 	"taxcas/pkg/upload"
@@ -46,6 +47,7 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/admin/certs", admin.GetCertList)
 		apiv1.POST("/admin/cert/add", admin.AddCert)
 		apiv1.POST("/admin/cert/upload_image", admin.UploadImage)
+		apiv1.GET("/admin/cert/preview", admin.PreviewImage)
 		/*
 		// 获取证书申请信息
 		apiv1.GET("/admin/cert/:cert_id", admin.GetCertList)
