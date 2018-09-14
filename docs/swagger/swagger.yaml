@@ -1,38 +1,141 @@
+definitions:
+  app.ResponseMsg:
+    properties:
+      data:
+        type: object
+      msg:
+        type: string
+      success:
+        type: boolean
+    type: object
+  models.C_certs:
+    properties:
+      certID:
+        type: integer
+      certName:
+        type: string
+      certPrefix:
+        type: string
+      cost:
+        type: integer
+      imgName:
+        type: string
+      positions:
+        $ref: '#/definitions/models.position'
+        type: object
+      status:
+        type: string
+    type: object
+  models.coord:
+    properties:
+      x:
+        type: integer
+      "y":
+        type: integer
+    type: object
+  models.position:
+    properties:
+      date:
+        $ref: '#/definitions/models.coord'
+        type: object
+      englishName:
+        $ref: '#/definitions/models.coord'
+        type: object
+      name:
+        $ref: '#/definitions/models.coord'
+        type: object
+      personalID:
+        $ref: '#/definitions/models.coord'
+        type: object
+      serialNumber:
+        $ref: '#/definitions/models.coord'
+        type: object
+    type: object
 info:
   contact: {}
   license: {}
 paths:
   /api/v1/admin/cert/add:
     post:
+      parameters:
+      - description: 证书详细信息
+        in: body
+        name: certInfo
+        required: true
+        schema:
+          $ref: '#/definitions/models.C_certs'
+          type: object
       produces:
       - application/json
       responses:
         "200":
-          description: '{"code":200,"success": bool,"data":[]}'
+          description: certID 不需要填写, 失败返回 false 及 msg
           schema:
-            type: string
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
       summary: 添加证书
-  /api/v1/admin/cert/upload_image:
-    post:
+  /api/v1/admin/cert/preview:
+    get:
       parameters:
       - {}
       produces:
       - application/json
       responses:
         "200":
-          description: '{"code":200,"success": bool,"data":{"image_save_url":"upload/images/96a.jpg",
-            "image_url": "http://..."}'
+          description: 'data:{"image_save_url":"upload/images/96a.jpg", "image_url":
+            "http://..."}'
           schema:
-            type: string
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 预览证书
+  /api/v1/admin/cert/upload_image:
+    post:
+      parameters:
+      - description: 图片文件
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - multipart/form-data
+      responses:
+        "200":
+          description: 'data:{"image_save_url":"upload/images/96a.jpg", "image_url":
+            "http://..."}'
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
       summary: 上传图片
   /api/v1/admin/certs:
     get:
+      description: 查询所有证书列表
       produces:
       - application/json
       responses:
         "200":
-          description: '{"code":200,"success": bool,"data":[]}'
+          description: data:[{"Id":0, "Name":"证书1"}]
           schema:
-            type: string
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
       summary: 获取证书列表
+  /auth:
+    get:
+      parameters:
+      - description: The username for login
+        in: query
+        name: username
+        required: true
+        type: string
+      - description: The password for login
+        in: query
+        name: password
+        required: true
+        type: string
+      responses:
+        "200":
+          description: data":{"token":string}
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 登陆验证
 swagger: "2.0"

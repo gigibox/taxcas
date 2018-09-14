@@ -12,19 +12,21 @@ import (
 	"taxcas/service/cert_service"
 )
 
-// @Summary 获取证书列表
-// @Produce  json
-// @Success 200 {string} json "{"code":200,"success": bool,"data":[]}"
-// @Router /api/v1/admin/certs [get]
+// @Summary 	获取证书列表
+// @Description 查询所有证书列表
+// @Produce  	json
+// @Success 	200 {object} app.ResponseMsg "data:[{"Id":0, "Name":"证书1"}]"
+// @Router 		/api/v1/admin/certs [get]
 func GetCertList(c *gin.Context) {
 	appG := app.Gin{c}
 	appG.Response(http.StatusOK, true, e.SUCCESS, cert_service.GetAllCertName())
 }
 
 // @Summary 添加证书
-// @Produce  json
-// @Success 200 {string} json "{"code":200,"success": bool,"data":[]}"
-// @Router /api/v1/admin/cert/add [post]
+// @Produce json
+// @Param   certInfo body models.C_certs true "证书详细信息"
+// @Success 200 {object} app.ResponseMsg "certID 不需要填写, 失败返回 false 及 msg"
+// @Router  /api/v1/admin/cert/add [post]
 func AddCert(c *gin.Context) {
 	appG := app.Gin{c}
 
@@ -67,19 +69,20 @@ func AddCert(c *gin.Context) {
 }
 
 // @Summary 预览证书
-// @Produce  json
-// @Param image post file true "图片文件"
-// @Success 200 {string} json "{"code":200,"success": bool,"data":{"image_save_url":"upload/images/96a.jpg", "image_url": "http://..."}"
-// @Router /api/v1//admin/cert/preview [get]
+// @Produce json
+// @Param   image post file true "图片文件"
+// @Success 200 {object} app.ResponseMsg "data:{"image_save_url":"upload/images/96a.jpg", "image_url": "http://..."}"
+// @Router  /api/v1/admin/cert/preview [get]
 func PreviewImage(c *gin.Context) {
 
 }
 
-// @Summary 上传图片
-// @Produce  json
-// @Param image post file true "图片文件"
-// @Success 200 {string} json "{"code":200,"success": bool,"data":{"image_save_url":"upload/images/96a.jpg", "image_url": "http://..."}"
-// @Router /api/v1/admin/cert/upload_image [post]
+// @Summary  上传图片
+// @Consumes mpfd
+// @Produce  multipart/form-data
+// @Param    image formData file true "图片文件"
+// @Success  200 {object} app.ResponseMsg "data:{"image_save_url":"upload/images/96a.jpg", "image_url": "http://..."}"
+// @Router   /api/v1/admin/cert/upload_image [post]
 func UploadImage(c *gin.Context) {
 	appG := app.Gin{C: c}
 
