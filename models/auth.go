@@ -8,7 +8,7 @@ import (
 )
 
 func CheckAuth(username, password string) (bool, error) {
-	result := t_admin{}
+	result := C_admin{}
 
 	c := session.DB(setting.DatabaseSetting.Name).C(setting.DatabaseSetting.TablePrefix + "admin")
 

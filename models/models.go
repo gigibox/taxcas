@@ -1,18 +1,11 @@
 package models
 
 import (
+	"io/ioutil"
 	"log"
 	"taxcas/pkg/setting"
 	"taxcas/pkg/util"
 )
-
-type Model struct {
-	ID         int `gorm:"primary_key" json:"id"`
-	CreatedOn  int `json:"created_on"`
-	ModifiedOn int `json:"modified_on"`
-	DeletedOn  int `json:"deleted_on"`
-}
-
 
 func Setup() {
 	var err error
@@ -29,7 +22,7 @@ func Setup() {
 		}
 	}
 
-	administrator := t_admin{
+	administrator := C_admin{
 		"admin",
 		util.EncodeMD5("admin"),
 	}
@@ -41,9 +34,18 @@ func Setup() {
 	}
 }
 
-func addExtraSpaceIfExist(str string) string {
-	if str != "" {
-		return " " + str
+func GetFontsList() []string {
+	var fonts []string
+
+	list, err := ioutil.ReadDir(setting.AppSetting.RuntimeRootPath + setting.AppSetting.FontSavePath)
+	if err != nil {
+		log.Println(err)
+		return fonts
 	}
-	return ""
+
+	for _, v := range list {
+		fonts = append(fonts, v.Name())
+	}
+
+	return fonts
 }

@@ -13,10 +13,13 @@ type App struct {
 	PrefixUrl string
 
 	RuntimeRootPath string
+	UploadAllowMaxSize   int
 
 	ImageSavePath  string
-	ImageMaxSize   int
 	ImageAllowExts []string
+
+	ExcelSavePath  string
+	ExcelAllowExts []string
 
 	ExportSavePath string
 	QrCodeSavePath string
@@ -74,7 +77,7 @@ func Setup() {
 	mapTo("database", DatabaseSetting)
 	mapTo("redis", RedisSetting)
 
-	AppSetting.ImageMaxSize = AppSetting.ImageMaxSize * 1024 * 1024
+	AppSetting.UploadAllowMaxSize = AppSetting.UploadAllowMaxSize * 1024 * 1024
 	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
 	ServerSetting.WriteTimeout = ServerSetting.ReadTimeout * time.Second
 	RedisSetting.IdleTimeout = RedisSetting.IdleTimeout * time.Second

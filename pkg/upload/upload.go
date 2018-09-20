@@ -2,7 +2,7 @@ package upload
 
 import (
 	"fmt"
-	"log"
+	"math/rand"
 	"mime/multipart"
 	"os"
 	"path"
@@ -14,8 +14,23 @@ import (
 	"taxcas/pkg/util"
 )
 
+func _Random(n int) string {
+	letterBytes := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
+}
+
 func GetImageFullUrl(name string) string {
 	return setting.AppSetting.PrefixUrl + "/" + GetImagePath() + name
+}
+
+func GetRandomFileName(name string) string {
+	ext := path.Ext(name)
+
+	return _Random(32) + ext
 }
 
 func GetImageName(name string) string {
@@ -45,26 +60,37 @@ func CheckImageExt(fileName string) bool {
 	return false
 }
 
-func CheckImageSize(f multipart.File) bool {
+func CheckExcelExt(fileName string) bool {
+	ext := file.GetExt(fileName)
+	for _, allowExt := range setting.AppSetting.ExcelAllowExts {
+		if strings.ToUpper(allowExt) == strings.ToUpper(ext) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func CheckFileSize(f multipart.File) bool {
 	size, err := file.GetSize(f)
 	if err != nil {
-		log.Println(err)
 		logging.Warn(err)
 		return false
 	}
 
-	return size <= setting.AppSetting.ImageMaxSize
+	return size <= setting.AppSetting.UploadAllowMaxSize
 }
 
-func CheckImage(src string) error {
+func CheckDir(src string) error {
 	dir, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("os.Getwd err: %v", err)
 	}
 
-	err = file.IsNotExistMkDir(dir + "/" + src)
-	if err != nil {
-		return fmt.Errorf("file.IsNotExistMkDir err: %v", err)
+	if err = file.IsNotExistMkDir(dir + "/" + src); err != nil {
+		if err = os.Mkdir(dir + "/" + src, os.ModePerm); err != nil {
+			return fmt.Errorf("mkdir failed! %v", err)
+		}
 	}
 
 	perm := file.CheckPermission(src)
@@ -73,4 +99,16 @@ func CheckImage(src string) error {
 	}
 
 	return nil
+}
+
+func GetExcelFullUrl(name string) string {
+	return setting.AppSetting.PrefixUrl + "/" + GetExcelPath() + name
+}
+
+func GetExcelPath() string {
+	return setting.AppSetting.ExcelSavePath
+}
+
+func GetExcelFullPath() string {
+	return setting.AppSetting.RuntimeRootPath + GetExcelPath()
 }

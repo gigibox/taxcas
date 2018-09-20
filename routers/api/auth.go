@@ -12,12 +12,8 @@ import (
 	"taxcas/service/auth_service"
 )
 
-type auth struct {
-	Username string `valid:"Required; MaxSize(50)"`
-	Password string `valid:"Required; MaxSize(50)"`
-}
-
-// @Summary 登陆验证
+// @Summary 用户登陆
+// @Tags 	认证授权
 // @Param   username query string true "The username for login"
 // @Param   password query string true "The password for login"
 // @Success 200 {object} app.ResponseMsg "data":{"token":string}"
@@ -29,8 +25,8 @@ func GetAuth(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	a := auth{Username: username, Password: password}
-	ok, _ := valid.Valid(&a)
+	authService := auth_service.Auth{Username: username, Password: password}
+	ok, _ := valid.Valid(authService)
 
 	if !ok {
 		app.MarkErrors(valid.Errors)
@@ -38,7 +34,6 @@ func GetAuth(c *gin.Context) {
 		return
 	}
 
-	authService := auth_service.Auth{Username: username, Password: password}
 	isExist, err := authService.Check()
 	if err != nil {
 		appG.Response(http.StatusOK, false, e.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)

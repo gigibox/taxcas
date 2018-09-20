@@ -8,47 +8,90 @@ definitions:
       success:
         type: boolean
     type: object
+  models.Applicant:
+    properties:
+      address:
+        type: string
+      cert_id:
+        type: string
+      cert_name:
+        type: string
+      cert_type:
+        type: integer
+      city:
+        type: string
+      company_name:
+        type: string
+      company_nature:
+        type: string
+      company_scale:
+        type: string
+      district:
+        type: string
+      english_name:
+        type: string
+      job:
+        type: string
+      name:
+        type: string
+      personal_id:
+        type: string
+      phone:
+        type: integer
+      province:
+        type: string
+      study_date:
+        type: string
+      wechat_id:
+        type: string
+    type: object
   models.C_certs:
     properties:
-      certID:
+      authority:
+        type: string
+      cert_id:
         type: integer
-      certName:
+      cert_name:
         type: string
-      certPrefix:
-        type: string
-      cost:
-        type: integer
-      imgName:
-        type: string
-      positions:
-        $ref: '#/definitions/models.position'
+      image_design:
+        $ref: '#/definitions/models.ImageDesigner'
         type: object
+      price:
+        type: integer
       status:
         type: string
     type: object
-  models.coord:
+  models.Coord:
     properties:
+      font:
+        type: string
+      font_size:
+        type: number
+      str:
+        type: string
       x:
         type: integer
       "y":
         type: integer
     type: object
-  models.position:
+  models.ImageDesigner:
     properties:
       date:
-        $ref: '#/definitions/models.coord'
+        $ref: '#/definitions/models.Coord'
         type: object
-      englishName:
-        $ref: '#/definitions/models.coord'
+      english_name:
+        $ref: '#/definitions/models.Coord'
         type: object
+      img_name:
+        type: string
       name:
-        $ref: '#/definitions/models.coord'
+        $ref: '#/definitions/models.Coord'
         type: object
-      personalID:
-        $ref: '#/definitions/models.coord'
+      personal_id:
+        $ref: '#/definitions/models.Coord'
         type: object
-      serialNumber:
-        $ref: '#/definitions/models.coord'
+      serial_number:
+        $ref: '#/definitions/models.Coord'
         type: object
     type: object
 info:
@@ -74,38 +117,82 @@ paths:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
       summary: 添加证书
-  /api/v1/admin/cert/preview:
+      tags:
+      - 后台管理
+  /api/v1/admin/cert/applicants/{cert_id}/{action}:
     get:
+      description: 查询指定证书的申领信息,
       parameters:
-      - {}
+      - description: Cert ID
+        in: path
+        name: cert_id
+        required: true
+        type: string
+      - description: 类型 all | export | verify | passed | Reject
+        in: path
+        name: action
+        required: true
+        type: string
+      - description: 页数
+        in: query
+        name: page
+        type: integer
+      - description: 每页显示的条数
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: 'data:{"image_save_url":"upload/images/96a.jpg", "image_url":
+          description: data:[{""}]
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 查询证书申领信息
+      tags:
+      - 后台管理
+  /api/v1/admin/cert/preview:
+    get:
+      parameters:
+      - description: 证书详细信息
+        in: body
+        name: positions
+        schema:
+          $ref: '#/definitions/models.ImageDesigner'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'data:{"image_save_path":"upload/images/96a.jpg", "image_url":
             "http://..."}'
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
       summary: 预览证书
+      tags:
+      - 后台管理
   /api/v1/admin/cert/upload_image:
     post:
       parameters:
-      - description: 图片文件
+      - description: 证书模板图片
         in: formData
         name: image
         required: true
         type: file
       produces:
-      - multipart/form-data
+      - application/json
       responses:
         "200":
-          description: 'data:{"image_save_url":"upload/images/96a.jpg", "image_url":
+          description: 'data:{"image_save_path":"upload/images/96a.jpg", "image_url":
             "http://..."}'
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
-      summary: 上传图片
+      summary: 上传证书模板
+      tags:
+      - 后台管理
   /api/v1/admin/certs:
     get:
       description: 查询所有证书列表
@@ -113,11 +200,107 @@ paths:
       - application/json
       responses:
         "200":
-          description: data:[{"Id":0, "Name":"证书1"}]
+          description: data:[{"cert_id":"0", "cert_name":"证书1", "status":"enable"}]
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
       summary: 获取证书列表
+      tags:
+      - 后台管理
+  /api/v1/admin/export/cert/{cert_id}/{action}:
+    post:
+      parameters:
+      - description: Cert ID
+        in: path
+        name: cert_id
+        required: true
+        type: string
+      - description: 类型 all | export | verify | passed | Reject
+        in: path
+        name: action
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'data:{"file_save_path":"upload/images/96a.csv", "file_url":
+            "http://..."}'
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 导出用户申领信息
+      tags:
+      - 后台管理
+  /api/v1/admin/fonts:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'data:{"image_save_path":"upload/images/96a.jpg", "image_url":
+            "http://..."}'
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 查询字体列表
+      tags:
+      - 后台管理
+  /api/v1/admin/import/cert/{cert_id}/{action}:
+    post:
+      parameters:
+      - description: Cert ID
+        in: path
+        name: cert_id
+        required: true
+        type: string
+      - description: 类型 verify | Reject
+        in: path
+        name: action
+        required: true
+        type: string
+      - description: 审核结果.csv
+        in: formData
+        name: file_csv
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: data:{""}
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 导入审核结果
+      tags:
+      - 后台管理
+  /api/v1/cert/{cert_id}/apply:
+    put:
+      parameters:
+      - description: Cert ID
+        in: path
+        name: cert_id
+        required: true
+        type: integer
+      - description: 用户提交信息
+        in: body
+        name: applicant
+        required: true
+        schema:
+          $ref: '#/definitions/models.Applicant'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: cost 与 applyStatus 不提交. 失败返回 false 及 msg
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 申请证书
+      tags:
+      - 用户申请
   /auth:
     get:
       parameters:
@@ -137,5 +320,7 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
-      summary: 登陆验证
+      summary: 用户登陆
+      tags:
+      - 认证授权
 swagger: "2.0"
