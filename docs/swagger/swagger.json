@@ -96,18 +96,14 @@
                 "summary": "执行审核结果",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "导入的csv文件路径",
-                        "name": "file",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "审核中: passed, 已拒绝: refunded",
-                        "name": "type",
-                        "in": "query",
-                        "required": true
+                        "description": "file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝), wechatid: 选中的记录",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/admin.parameters"
+                        }
                     }
                 ],
                 "responses": {
@@ -367,6 +363,31 @@
                 }
             }
         },
+        "/api/v1/weixin/openid/{code}": {
+            "get": {
+                "tags": [
+                    "微信公众号"
+                ],
+                "summary": "获取用户openid",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "微信浏览器获取的 code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"openid\":string, \"token\":string}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/weixin/users/{openid}": {
             "get": {
                 "tags": [
@@ -392,9 +413,108 @@
                     }
                 }
             }
+        },
+        "/api/v1/weixin/wxorder/{openid}/{certid}": {
+            "get": {
+                "tags": [
+                    "微信公众号"
+                ],
+                "summary": "获取支付订单",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户 openid",
+                        "name": "openid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "证书 id",
+                        "name": "certid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"prepay_id\":string}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/weixin/wxquery/{out_trade_no}": {
+            "get": {
+                "tags": [
+                    "微信公众号"
+                ],
+                "summary": "查询退款",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "付款订单号",
+                        "name": "out_trade_no",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"msg\":string, \"extra\":}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/weixin/wxrefund/{out_trade_no}": {
+            "get": {
+                "tags": [
+                    "微信公众号"
+                ],
+                "summary": "申请退款",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "付款订单号",
+                        "name": "out_trade_no",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"msg\":string, \"extra\":}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "admin.parameters": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "file_path": {
+                    "type": "string"
+                },
+                "wechatid": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "app.ResponseMsg": {
             "type": "object",
             "properties": {

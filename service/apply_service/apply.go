@@ -2,7 +2,6 @@ package apply_service
 
 import (
 	"encoding/csv"
-	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -41,6 +40,36 @@ func (this *S_Apply) CheckApplyStatus() (bool, error) {
 
 func (this *S_Apply) Add() (bool, error) {
 	return models.MgoInsert(this.Data, this.Collection)
+}
+
+func (this *S_Apply) UpdateStatus(certid string) (bool) {
+		statusCode := this.Data.ApplyStatus
+
+		// 根据微信id 更新申请订单状态
+		if ok , err := models.MgoUpsert("applicant.user.wechatid", this.Data.WechatID, this.Collection, this.Data); !ok {
+			logging.Warn("Update applicant status:", err)
+			return false
+		}
+
+		// 判断为已通过, 生成证书编号
+		if statusCode == models.Passed {
+
+		}
+
+		// 判断为退款请求, 发起退款申请
+		if statusCode == models.Refunded {
+
+		}
+
+		// 修改用户申请状态
+		user := models.User{
+			WechatID : this.Data.WechatID,
+		}
+		user_service.UpdateCerts(user, certid, this.Data.ApplyStatus)
+
+		// 推送微信提醒
+
+		return true
 }
 
 func New(col string, commit models.Applicant) (*S_Apply) {
@@ -167,7 +196,7 @@ func ExportFile(certid, act string) (string, error) {
 	return filename, err
 }
 
-func UpdateApplicantsByFile(certid, act, file string) (int, int) {
+func UpdateApplicants(certid, act, file string, wxids []string) (int, int) {
 	var succeed, failure int
 
 	statusCode, ok := models.ActionMsg[act]
@@ -177,60 +206,56 @@ func UpdateApplicantsByFile(certid, act, file string) (int, int) {
 
 	statusMsg := models.StatusMsg[statusCode]
 
-	// 解析cav文件
-	f, err := os.Open(file)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-
-	reader := csv.NewReader(f)
-
-	// 跳过第一行
-	reader.Read()
-
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
-		} else if nil != err {
-			fmt.Println(err)
-			failure ++
-			continue
-		}
-		// 状态
-		wxid  := record[1]
-
-		doc := models.C_Apply{
+	applyService := S_Apply{
+		Collection: "cert" + certid + "_apply",
+		Data:models.C_Apply{
 			ApplyStatus: statusCode,
 			ApplyStatusMsg: statusMsg,
+		},
+	}
+
+	// 根据导入数据处理
+	if file != "" {
+		// 解析cav文件
+		f, err := os.Open(file)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+
+		reader := csv.NewReader(f)
+
+		// 跳过第一行
+		reader.Read()
+
+		for {
+			record, err := reader.Read()
+			if err == io.EOF {
+				break
+			} else if nil != err {
+				logging.Error(err)
+				failure ++
+				continue
+			}
+
+			applyService.Data.WechatID = record[1]
+			if ok := applyService.UpdateStatus(certid); ok {
+				succeed ++
+			} else {
+				failure ++
+			}
+		}
+	} else {
+		// 手动选择
+		for i := range wxids{
+			applyService.Data.WechatID = wxids[i]
+			if ok := applyService.UpdateStatus(certid); ok {
+				succeed ++
+			} else {
+				failure ++
+			}
 		}
 
-		// 根据微信id 更新申请订单状态
-		if ok , err := models.MgoUpsert("applicant.user.wechatid", wxid, "cert" + certid + "_apply", doc); !ok {
-			logging.Warn("UpdateApplicantsByFile ERROR:", err)
-			failure ++
-		} else {
-			succeed ++
-
-			// 判断为已通过, 生成证书编号
-			if statusCode == models.Passed {
-
-			}
-
-			// 判断为退款请求, 发起退款申请
-			if statusCode == models.Refunded {
-
-			}
-
-			// 修改用户申请状态
-			user := models.User{
-				WechatID : wxid,
-			}
-			user_service.UpdateCerts(user, certid, statusCode)
-
-			// 推送微信提醒
-		}
 	}
 
 	return succeed, failure

@@ -299,15 +299,27 @@ func ExportApplicants(c *gin.Context) {
 	})
 }
 
+type parameters struct {
+	FilePath	string `json:"file_path"`
+	Action		string `json:"action"`
+	Wechatid	[]string `json:"wechatid"`
+}
 // @Summary  执行审核结果
 // @Tags 	 后台管理
 // @Produce  json
-// @Param    file query string true "导入的csv文件路径"
-// @Param    type query string true "审核中: passed, 已拒绝: refunded"
+// @Param    data body admin.parameters true "file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝), wechatid: 选中的记录"
 // @Success  200 {object} app.ResponseMsg "data:{""}"
 // @Router   /api/v1/admin/applicants/certs/{certid} [put]
 func UpdateApplicants(c *gin.Context) {
 	appG := app.Gin{C: c}
+
+	params := parameters{}
+	err := c.BindJSON(&params)
+	if err != nil {
+		logging.Warn(err)
+		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
+		return
+	}
 
 	// 检查证书id是否存在
 	id := com.StrTo(c.Query("certid")).MustInt()
@@ -318,7 +330,10 @@ func UpdateApplicants(c *gin.Context) {
 	}
 
 	// 解析审核结果
-	apply_service.UpdateApplicantsByFile(c.Param("certid"), c.Param("type"), c.Param("file"))
+	s, f := apply_service.UpdateApplicants(c.Param("certid"), params.Action, params.FilePath, params.Wechatid)
 
-	appG.Response(http.StatusOK, true, e.SUCCESS, nil)
+	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]int{
+		"success" : s,
+		"failure" : f,
+	})
 }

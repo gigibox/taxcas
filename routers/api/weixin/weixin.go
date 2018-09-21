@@ -21,6 +21,11 @@ import (
 	//	"errors"
 )
 
+// @Summary 获取用户openid
+// @Tags 	微信公众号
+// @Param   code path string true "微信浏览器获取的 code"
+// @Success 200 {string} json "{"openid":string, "token":string}"
+// @Router  /api/v1/weixin/openid/{code} [get]
 func WXGetOpenID(c *gin.Context) {
 	type Response struct {
 		Access_token  string `json:"access_token"`
@@ -66,6 +71,12 @@ func WXGetOpenID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"openid": openid, "token": "123456"})
 }
 
+// @Summary 获取支付订单
+// @Tags 	微信公众号
+// @Param   openid path string true "用户 openid"
+// @Param   certid path string true "证书 id"
+// @Success 200 {string} json "{"prepay_id":string}"
+// @Router  /api/v1/weixin/wxorder/{openid}/{certid} [get]
 func WXPayUnifyOrderReq(c *gin.Context) {
 	//appG := app.Gin{c}
 	ip := c.ClientIP()
@@ -178,6 +189,11 @@ func WXPayCallback(c *gin.Context) {
 	c.XML(http.StatusOK, ms)
 }
 
+// @Summary 申请退款
+// @Tags 	微信公众号
+// @Param   out_trade_no path string true "付款订单号"
+// @Success 200 {string} json "{"msg":string, "extra":}"
+// @Router  /api/v1/weixin/wxrefund/{out_trade_no} [get]
 func WXPayRefund(c *gin.Context) {
 	out_trade_no := c.Param("out_trade_no")
 	out_refund_no := UniqueId()
@@ -201,6 +217,11 @@ func WXPayRefund(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "SUCCESS", "extra": p})
 }
 
+// @Summary 查询退款
+// @Tags 	微信公众号
+// @Param   out_trade_no path string true "付款订单号"
+// @Success 200 {string} json "{"msg":string, "extra":}"
+// @Router  /api/v1/weixin/wxquery/{out_trade_no} [get]
 func WXPayRefundQuery(c *gin.Context) {
 	out_refund_no := c.Param("out_refund_no")
 
