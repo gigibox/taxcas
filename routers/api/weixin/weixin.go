@@ -187,12 +187,11 @@ func WXPayRefund(c *gin.Context) {
 	account.SetCertData(Weixin_cert)
 
 	client := wxpay.NewClient(&account)
-	client := wxpay.NewClient(wxpay.NewAccount(config.AppID, config.MchID, config.ApiKey, false))
 	params := make(wxpay.Params)
 	params.SetString("out_trade_no", out_trade_no).
 		SetString("out_refund_no", out_refund_no).
 		SetInt64("total_fee", 300).
-		SetString("refund_fee", 300)
+		SetInt64("refund_fee", 300)
 
 	p, err := client.Refund(params)
 	if err != nil {
