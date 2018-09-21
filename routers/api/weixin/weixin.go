@@ -11,55 +11,55 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"io"
+	"io/ioutil"
 	"sort"
 	"strings"
-	"io/ioutil"
-	"encoding/json"
-	"taxcas/pkg/config"
 	"taxcas/models"
-//	"errors"
+	"taxcas/pkg/config"
+	//	"errors"
 )
 
 func WXGetOpenID(c *gin.Context) {
 	type Response struct {
-                Access_token string  `json:"access_token"`
-                Expires_in  int      `json:"expires_in"`
+		Access_token  string `json:"access_token"`
+		Expires_in    int    `json:"expires_in"`
 		Refresh_token string `json:"refresh_token"`
-                Openid      string   `json:"openid"`
-		Scope       string   `json:"scope"`
-        }
+		Openid        string `json:"openid"`
+		Scope         string `json:"scope"`
+	}
 	code := c.Param("code")
 
 	url := strings.Join([]string{"https://api.weixin.qq.com/sns/oauth2/access_token",
 		"?appid=", config.AppID,
-		"&secret=", config.AppSecret, 
+		"&secret=", config.AppSecret,
 		"&code=", code,
 		"&grant_type=authorization_code"}, "")
 
 	resp, err := http.Get(url)
-        if err != nil ||  resp.StatusCode != http.StatusOK{
-                fmt.Println("response err!")
-                fmt.Println(err)
-        }
+	if err != nil || resp.StatusCode != http.StatusOK {
+		fmt.Println("response err!")
+		fmt.Println(err)
+	}
 
-        defer resp.Body.Close()
-        body, err := ioutil.ReadAll(resp.Body)
-        if err != nil {
-                fmt.Println("io err!")
-        }
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("io err!")
+	}
 
-              fmt.Println("+++++++++++++++++++++++++")
-              fmt.Println(string(body))
-              fmt.Println("+++++++++++++++++++++++++")
+	fmt.Println("+++++++++++++++++++++++++")
+	fmt.Println(string(body))
+	fmt.Println("+++++++++++++++++++++++++")
 
-        result := Response{}
-        err = json.Unmarshal(body, &result)
-        if err != nil {
-                fmt.Println(err)
-        }
+	result := Response{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		fmt.Println(err)
+	}
 
-        openid := result.Openid
+	openid := result.Openid
 	fmt.Println("=======================")
 	fmt.Println(result)
 	fmt.Println("=======================")
@@ -72,14 +72,14 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	openid := c.Param("openid")
 	certid := c.Param("certid")
 	result := models.C_certs{}
-	isExist,err :=  models.MgoFindOne("CertID", certid, "certs",&result)
+	isExist, err := models.MgoFindOne("CertID", certid, "certs", &result)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"msg": "FAIL","extra":"查找数据库失败"})	
+		c.JSON(http.StatusNotFound, gin.H{"msg": "FAIL", "extra": "查找数据库失败"})
 	}
 	if isExist == false {
-		c.JSON(http.StatusNotFound, gin.H{"msg": "FAIL","extra":"没有找到此证书"})
+		c.JSON(http.StatusNotFound, gin.H{"msg": "FAIL", "extra": "没有找到此证书"})
 	}
-	
+
 	price := result.Price
 	out_trade_no := UniqueId()
 	fmt.Println(ip)
@@ -176,6 +176,26 @@ func WXPayCallback(c *gin.Context) {
 	}
 
 	c.XML(http.StatusOK, ms)
+}
+
+func WXPayRefund(c *gin.Context) {
+	out_trade_no := c.Param("out_trade_no")
+	out_refund_no := UniqueId()
+	//通过订单号去支付成功的数据库表中查找是否有此订单，并取出相应的total_fee,设置refund_fee
+
+	client := wxpay.NewClient(wxpay.NewAccount(config.AppID, config.MchID, config.ApiKey, false))
+	params := make(wxpay.Params)
+	params.SetString("out_trade_no", out_trade_no).
+		SetString("out_refund_no", out_refund_no).
+		SetInt64("total_fee", 300).
+		SetString("refund_fee", 300)
+
+	p, err := client.Refund(params)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"msg": "UnifyOder failed"})
+	}
+	//更新退款成功的数据库表，记录退款成功状态
+	c.JSON(http.StatusOK, gin.H{"msg": "SUCCESS", "extra": "退款成功"})
 }
 
 func wxpayVerifySign(needVerifyM map[string]interface{}, sign string) bool {

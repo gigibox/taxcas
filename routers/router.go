@@ -87,6 +87,9 @@ func InitRouter() *gin.Engine {
 		// 微信服务端回调
 		apiv1.GET("weixin/wxnotify", weixin.WXPayCallback)
 
+		//申请退款
+		apiv1.GET("weixin/wxrefund/:out_trade_no", weixin.WXPayRefund)
+
 	}
 
 	return r
