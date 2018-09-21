@@ -5,6 +5,7 @@ import (
 	"taxcas/middleware/cors"
 	"taxcas/routers/api/admin"
 	"taxcas/routers/api/user"
+	"taxcas/routers/api/weixin"
 
 	"github.com/gin-gonic/gin"
 
