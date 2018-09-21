@@ -5,6 +5,39 @@
         "license": {}
     },
     "paths": {
+        "/api/auth": {
+            "get": {
+                "tags": [
+                    "认证授权"
+                ],
+                "summary": "用户登陆",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The username for login",
+                        "name": "username",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The password for login",
+                        "name": "password",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "data\":{\"token\":string}",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/app.ResponseMsg"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/applicants/certs/{certid}": {
             "get": {
                 "description": "查询指定证书的申领信息,",
@@ -279,39 +312,6 @@
                 "responses": {
                     "200": {
                         "description": "cost 与 applyStatus 不提交. 失败返回 false 及 msg",
-                        "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/app.ResponseMsg"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth": {
-            "get": {
-                "tags": [
-                    "认证授权"
-                ],
-                "summary": "用户登陆",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The username for login",
-                        "name": "username",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The password for login",
-                        "name": "password",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "data\":{\"token\":string}",
                         "schema": {
                             "type": "object",
                             "$ref": "#/definitions/app.ResponseMsg"

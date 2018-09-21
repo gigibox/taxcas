@@ -17,7 +17,7 @@ import (
 // @Param   username query string true "The username for login"
 // @Param   password query string true "The password for login"
 // @Success 200 {object} app.ResponseMsg "data":{"token":string}"
-// @router /auth [get]
+// @router  /api/auth [get]
 func GetAuth(c *gin.Context) {
 	appG := app.Gin{C: c}
 	valid := validation.Validation{}

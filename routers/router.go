@@ -39,12 +39,14 @@ func InitRouter() *gin.Engine {
 		c.HTML(http.StatusOK, "login.html", gin.H{"title":"taxcas"})
 	})
 
-	r.StaticFS("/export", http.Dir(export.GetExportFullPath()))
-	r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
-	//r.StaticFS("/qrcode", http.Dir(qrcode.GetQrCodeFullPath()))
+	public := r.Group("api")
+	{
+		public.StaticFS("/export", http.Dir(export.GetExportFullPath()))
+		public.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
 
-	r.GET("/auth", api.GetAuth)
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		public.GET("/auth", api.GetAuth)
+		public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 
 	apiv1 := r.Group("/api/v1")
 	//apiv1.Use(jwt.JWT())

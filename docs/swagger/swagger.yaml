@@ -98,6 +98,28 @@ info:
   contact: {}
   license: {}
 paths:
+  /api/auth:
+    get:
+      parameters:
+      - description: The username for login
+        in: query
+        name: username
+        required: true
+        type: string
+      - description: The password for login
+        in: query
+        name: password
+        required: true
+        type: string
+      responses:
+        "200":
+          description: data":{"token":string}
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 用户登陆
+      tags:
+      - 认证授权
   /api/v1/admin/applicants/certs/{certid}:
     get:
       description: 查询指定证书的申领信息,
@@ -289,26 +311,4 @@ paths:
       summary: 申请证书
       tags:
       - 用户申请
-  /auth:
-    get:
-      parameters:
-      - description: The username for login
-        in: query
-        name: username
-        required: true
-        type: string
-      - description: The password for login
-        in: query
-        name: password
-        required: true
-        type: string
-      responses:
-        "200":
-          description: data":{"token":string}
-          schema:
-            $ref: '#/definitions/app.ResponseMsg'
-            type: object
-      summary: 用户登陆
-      tags:
-      - 认证授权
 swagger: "2.0"
