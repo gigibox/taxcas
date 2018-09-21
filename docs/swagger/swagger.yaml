@@ -310,5 +310,36 @@ paths:
             type: object
       summary: 申请证书
       tags:
-      - 用户申请
+      - 微信公众号
+  /api/v1/weixin/certs:
+    get:
+      description: 查询所有证书列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: data:[{"cert_id":"0", "cert_name":"证书1", "status":"enable"}]
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 获取证书列表
+      tags:
+      - 微信公众号
+  /api/v1/weixin/users/{openid}:
+    get:
+      parameters:
+      - description: 用户openid
+        in: path
+        name: openid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '用户基本信息 及 证书申领状态 ["申请证书id" : "申请状态"]'
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 查询用户
+      tags:
+      - 微信公众号
 swagger: "2.0"

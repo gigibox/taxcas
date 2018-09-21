@@ -45,3 +45,8 @@ func UpdateCerts(user models.User, cert_id string, apply_status int) (bool, erro
 
 
 }
+
+func GetUser(openid string, doc *models.C_users) (bool, error) {
+
+	return models.MgoFindOne("user.wechatid", openid, col_users, &doc)
+}
