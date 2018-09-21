@@ -90,6 +90,8 @@ func InitRouter() *gin.Engine {
 		//申请退款
 		apiv1.GET("weixin/wxrefund/:out_trade_no", weixin.WXPayRefund)
 
+		//查询退款
+		apiv1.GET("weixin/wxquery/:out_refund_no", weixin.WXPayRefundQuery)
 	}
 
 	return r

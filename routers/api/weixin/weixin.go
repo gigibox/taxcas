@@ -198,6 +198,21 @@ func WXPayRefund(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "SUCCESS", "extra": "退款成功"})
 }
 
+func WXPayRefundQuery(c *gin.Context) {
+	out_refund_no := c.Param("out_refund_no")
+
+	client := wxpay.NewClient(wxpay.NewAccount(config.AppID, config.MchID, config.ApiKey, false))
+	params := make(wxpay.Params)
+	params.SetString("out_refund_no", out_refund_no)
+
+	p, err := client.RefundQuery(params)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"msg": "UnifyOder failed"})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msg": "SUCCESS", "extra": "查询成功"})
+}
+
 func wxpayVerifySign(needVerifyM map[string]interface{}, sign string) bool {
 	signCalc := wxpayCalcSign(needVerifyM, "API_KEY")
 
