@@ -35,7 +35,7 @@ func Setup() {
 	filePath := getLogFilePath()
 
 	if err = file.IsNotExistMkDir(filePath); err != nil {
-		os.Mkdir(filePath + "/" + src, os.ModePerm)
+		os.Mkdir(filePath, os.ModePerm)
 	}
 
 	fileName := getLogFileName()

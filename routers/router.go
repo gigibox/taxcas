@@ -1,9 +1,8 @@
 package routers
 
 import (
-	"fmt"
 	"net/http"
-	"strings"
+	"taxcas/middleware/cors"
 	"taxcas/routers/api/admin"
 	"taxcas/routers/api/user"
 
@@ -22,11 +21,12 @@ import (
 func InitRouter() *gin.Engine {
 	r := gin.New()
 
-	r.Use(gin.Logger())
 	// 跨域
-	r.Use(Cors())
+	r.Use(cors.Cors())
 
+	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
+
 	gin.SetMode(setting.ServerSetting.RunMode)
 
 	// html
@@ -97,37 +97,4 @@ func InitRouter() *gin.Engine {
 	}
 
 	return r
-}
-
-func Cors() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		method := c.Request.Method
-
-		origin := c.Request.Header.Get("Origin")
-		var headerKeys []string
-		for k, _ := range c.Request.Header {
-			headerKeys = append(headerKeys, k)
-		}
-		headerStr := strings.Join(headerKeys, ", ")
-		if headerStr != "" {
-			headerStr = fmt.Sprintf("Content-Type, %s", headerStr)
-		} else {
-			headerStr = "Connection, Content-Length, Accept, User-Agent, Content-Type, Accept-Encoding, Origin, Referer, Accept-Language"
-		}
-		if origin != "" {
-			c.Header("Access-Control-Allow-Origin", "*")
-			c.Header("Access-Control-Allow-Headers", headerStr)
-			c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-			c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
-			c.Header("Access-Control-Allow-Credentials", "true")
-			//c.Set("content-type", "application/json")
-		}
-
-		//放行所有OPTIONS方法
-		if method == "OPTIONS" {
-			c.JSON(http.StatusOK, "Options Request!")
-		}
-
-		c.Next()
-	}
 }
