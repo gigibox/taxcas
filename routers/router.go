@@ -77,10 +77,10 @@ func InitRouter() *gin.Engine {
 	// 用户端接口
 	{
 		// 申请证书
-		apiv1.POST("/weixin/applicants/users/:wxid", apply.Apply)
+		apiv1.POST("/weixin/applicants/users/:wxid", user.ApplyForCert)
 
 		// 查询用户
-		apiv1.GET("/weixin/users/:wxid")
+		apiv1.GET("/weixin/users/:wxid", user.GetUserInfo)
 
 		// 查询证书
 		apiv1.GET("/weixin/certs", admin.GetCertList)

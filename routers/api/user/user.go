@@ -1,4 +1,4 @@
-package apply
+package user
 
 import (
 	"github.com/astaxie/beego/validation"
@@ -18,7 +18,7 @@ import (
 // @Param   applicant body models.Applicant true "用户提交信息"
 // @Success 200 {object} app.ResponseMsg "cost 与 applyStatus 不提交. 失败返回 false 及 msg"
 // @Router  /api/v1/weixin/applicants [post]
-func Apply(c *gin.Context) {
+func ApplyForCert(c *gin.Context) {
 	appG := app.Gin{c}
 
 	var commit models.Applicant
@@ -86,4 +86,8 @@ func Apply(c *gin.Context) {
 	// 更新用户信息
 	user_service.UpdateCerts(commit.User, applyService.Data.CertID, applyService.Data.ApplyStatus)
 	appG.Response(http.StatusOK, isAdded, e.SUCCESS, err)
+}
+
+func GetUserInfo(c *gin.Context) {
+
 }
