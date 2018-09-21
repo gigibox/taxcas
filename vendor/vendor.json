@@ -189,6 +189,19 @@
 			"revisionTime": "2018-03-20T13:32:07Z"
 		},
 		{
+			"checksumSHA1": "MIWrq8nUb3UetG8YKpVvkn9gtqU=",
+			"path": "github.com/objcoding/wxpay",
+			"revision": "b16895ad83b48f404e154c74942cde14c80fe937",
+			"revisionTime": "2018-09-17T11:05:20Z"
+		},
+		{
+			"checksumSHA1": "eDQ6f1EsNf+frcRO/9XukSEchm8=",
+			"origin": "github.com/objcoding/wxpay/vendor/github.com/satori/go.uuid",
+			"path": "github.com/satori/go.uuid",
+			"revision": "b16895ad83b48f404e154c74942cde14c80fe937",
+			"revisionTime": "2018-09-17T11:05:20Z"
+		},
+		{
 			"checksumSHA1": "H58GLzZlyb7pZwiW/rNqOFwWLyw=",
 			"path": "github.com/swaggo/gin-swagger",
 			"revision": "1510a6d46f01820f88b3a62d13353ccc8c6faa8e",
@@ -217,6 +230,20 @@
 			"path": "github.com/ugorji/go/codec",
 			"revision": "b5b949564861e43a03568a0b134c135cf318e5c8",
 			"revisionTime": "2018-02-05T16:51:14Z"
+		},
+		{
+			"checksumSHA1": "PJY7uCr3UnX4/Mf/RoWnbieSZ8o=",
+			"origin": "github.com/objcoding/wxpay/vendor/golang.org/x/crypto/pkcs12",
+			"path": "golang.org/x/crypto/pkcs12",
+			"revision": "b16895ad83b48f404e154c74942cde14c80fe937",
+			"revisionTime": "2018-09-17T11:05:20Z"
+		},
+		{
+			"checksumSHA1": "p0GC51McIdA7JygoP223twJ1s0E=",
+			"origin": "github.com/objcoding/wxpay/vendor/golang.org/x/crypto/pkcs12/internal/rc2",
+			"path": "golang.org/x/crypto/pkcs12/internal/rc2",
+			"revision": "b16895ad83b48f404e154c74942cde14c80fe937",
+			"revisionTime": "2018-09-17T11:05:20Z"
 		},
 		{
 			"checksumSHA1": "GtamqiJoL7PGHsN454AoffBFMa8=",
