@@ -12,6 +12,7 @@ import (
 	"taxcas/pkg/export"
 	"taxcas/pkg/logging"
 	"taxcas/pkg/upload"
+	"taxcas/service/apply_service"
 	"taxcas/service/cert_service"
 )
 
@@ -49,7 +50,7 @@ func GetApplicantList(c *gin.Context) {
 		return
 	}
 
-	appG.Response(http.StatusOK, true, e.SUCCESS, cert_service.GetApplyList(c.Param("certid"), action, page, limit))
+	appG.Response(http.StatusOK, true, e.SUCCESS, apply_service.GetApplyList(c.Param("certid"), action, page, limit))
 }
 
 // @Summary 添加证书
@@ -224,52 +225,13 @@ func UploadImage(c *gin.Context) {
 	})
 }
 
-// @Summary  导出用户申领信息
+// @Summary  导入文件
 // @Tags 	 后台管理
-// @Produce  json
-// @Param    certid path string true "Cert ID"
-// @Param    type query string true "类型 export | Reject"
-// @Success  200 {object} app.ResponseMsg "data:{"file_save_path":"upload/images/96a.csv", "file_url": "http://..."}"
-// @Router   /api/v1/admin/files/applicants/certs/{certid} [get]
-func ExportApplicants(c *gin.Context) {
-	appG := app.Gin{c}
-
-	id := com.StrTo(c.Query("certid")).MustInt()
-
-	if isExist, _ := cert_service.CheckExistByID(id); isExist {
-		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
-		return
-	}
-
-	filename, _ := cert_service.ExportFile(c.Param("certid"), c.Param("type"))
-	if filename == "" {
-		appG.Response(http.StatusOK, false, e.ERROR_EXPORT_FILE_FAIL, nil)
-		return
-	}
-
-	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
-		"file_url":      export.GetExportFullUrl(filename),
-		"file_save_path": export.GetExportPath() + filename,
-	})
-}
-
-
-// @Summary  导入审核结果
-// @Tags 	 后台管理
-// @Produce  json
-// @Param    certid path string true "Cert ID"
 // @Param    excel formData file true "审核结果.csv"
 // @Success  200 {object} app.ResponseMsg "data:{""}"
-// @Router   /api/v1/admin/applicants/certs/{certid} [post]
-func ImportApplicants(c *gin.Context) {
+// @Router   /api/v1/admin/excels [post]
+func UploadExcel(c *gin.Context) {
 	appG := app.Gin{C: c}
-
-	id := com.StrTo(c.Query("certid")).MustInt()
-
-	if isExist, _ := cert_service.CheckExistByID(id); isExist {
-		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
-		return
-	}
 
 	file, excel, err := c.Request.FormFile("excel")
 	if err != nil {
@@ -303,8 +265,60 @@ func ImportApplicants(c *gin.Context) {
 		return
 	}
 
+	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
+		"excel_save_path": fullPath + saveName,
+	})
+}
+
+// @Summary  导出用户申领信息
+// @Tags 	 后台管理
+// @Produce  json
+// @Param    certid path string true "Cert ID"
+// @Param    type query string true "类型 export | Reject"
+// @Success  200 {object} app.ResponseMsg "data:{"file_save_path":"upload/images/96a.csv", "file_url": "http://..."}"
+// @Router   /api/v1/admin/files/applicants/certs/{certid} [get]
+func ExportApplicants(c *gin.Context) {
+	appG := app.Gin{c}
+
+	id := com.StrTo(c.Query("certid")).MustInt()
+
+	if isExist, _ := cert_service.CheckExistByID(id); isExist {
+		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
+		return
+	}
+
+	filename, _ := apply_service.ExportFile(c.Param("certid"), c.Param("type"))
+	if filename == "" {
+		appG.Response(http.StatusOK, false, e.ERROR_EXPORT_FILE_FAIL, nil)
+		return
+	}
+
+	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
+		"file_url":      export.GetExportFullUrl(filename),
+		"file_save_path": export.GetExportPath() + filename,
+	})
+}
+
+// @Summary  执行审核结果
+// @Tags 	 后台管理
+// @Produce  json
+// @Param    file query string true "导入的csv文件路径"
+// @Param    type query string true "审核中: passed, 已拒绝: refunded"
+// @Success  200 {object} app.ResponseMsg "data:{""}"
+// @Router   /api/v1/admin/applicants/certs/{certid} [put]
+func UpdateApplicants(c *gin.Context) {
+	appG := app.Gin{C: c}
+
+	// 检查证书id是否存在
+	id := com.StrTo(c.Query("certid")).MustInt()
+
+	if isExist, _ := cert_service.CheckExistByID(id); isExist {
+		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
+		return
+	}
+
 	// 解析审核结果
-	cert_service.ImportResult(c.Param("certid"), "", fullPath + saveName)
+	apply_service.UpdateApplicantsByFile(c.Param("certid"), c.Param("type"), c.Param("file"))
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, nil)
 }

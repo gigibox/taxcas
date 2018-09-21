@@ -7,7 +7,7 @@ const (
 	Verifying
 	Reject
 	Passed
-	Refund
+	Refunding
 	Refunded
 	Error
 )
@@ -19,7 +19,7 @@ var StatusMsg = map[int]string{
 	Verifying:	"审核中",
 	Reject:		"已拒绝",
 	Passed:		"已通过",
-	Refund:		"退款中",
+	Refunding:	"退款中",
 	Refunded:	"已退款",
 	Error:		"错误状态",
 }
@@ -29,7 +29,7 @@ var ActionMsg = map[string]int {
 	"verify" : Verifying,
 	"passed" : Passed,
 	"reject" : Reject,
-	"error"  : Error,
+	"refunded" : Refunded,
 }
 
 type Coord struct {

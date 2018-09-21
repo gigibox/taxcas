@@ -153,18 +153,18 @@ paths:
       summary: 查询证书申领信息
       tags:
       - 后台管理
-    post:
+    put:
       parameters:
-      - description: Cert ID
-        in: path
-        name: certid
+      - description: 导入的csv文件路径
+        in: query
+        name: file
         required: true
         type: string
-      - description: 审核结果.csv
-        in: formData
-        name: excel
+      - description: '审核中: passed, 已拒绝: refunded'
+        in: query
+        name: type
         required: true
-        type: file
+        type: string
       produces:
       - application/json
       responses:
@@ -173,7 +173,7 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
-      summary: 导入审核结果
+      summary: 执行审核结果
       tags:
       - 后台管理
   /api/v1/admin/certs:
@@ -208,6 +208,23 @@ paths:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
       summary: 添加证书
+      tags:
+      - 后台管理
+  /api/v1/admin/excels:
+    post:
+      parameters:
+      - description: 审核结果.csv
+        in: formData
+        name: excel
+        required: true
+        type: file
+      responses:
+        "200":
+          description: data:{""}
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 导入文件
       tags:
       - 后台管理
   /api/v1/admin/files/applicants/certs/{certid}:
