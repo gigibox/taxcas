@@ -15,10 +15,9 @@ import (
 // @Summary 申请证书
 // @Tags 	用户申请
 // @Produce json
-// @Param   cert_id path int true "Cert ID"
 // @Param   applicant body models.Applicant true "用户提交信息"
 // @Success 200 {object} app.ResponseMsg "cost 与 applyStatus 不提交. 失败返回 false 及 msg"
-// @Router  /api/v1/cert/{cert_id}/apply [put]
+// @Router  /api/v1/weixin/applicants [post]
 func Apply(c *gin.Context) {
 	appG := app.Gin{c}
 
@@ -41,13 +40,7 @@ func Apply(c *gin.Context) {
 		return
 	}
 
-	certID := c.Param("cert_id")
-	if commit.CertID != certID {
-		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, "cert_id error")
-		return
-	}
-
-	applyService := apply_service.New("cert" + certID + "_apply", commit)
+	applyService := apply_service.New("cert" + commit.CertID + "_apply", commit)
 
 	// 判断证书是否存在, 或关闭申请
 	isExist, err := applyService.CheckCertByName()

@@ -29,29 +29,27 @@ func GetCertList(c *gin.Context) {
 // @Summary 	查询证书申领信息
 // @Tags 		后台管理
 // @Description 查询指定证书的申领信息,
-// @Param   	cert_id path string true "Cert ID"
-// @Param   	action path string true "类型 all | export | verify | passed | Reject"
+// @Param   	certid path string true "Cert ID"
+// @Param   	type query int true "类型 all | export | verify | passed | Reject"
 // @Param   	page query int false "页数"
 // @Param   	limit query int false "每页显示的条数"
 // @Produce  	json
 // @Success 	200 {object} app.ResponseMsg "data:[{""}]"
-// @Router 		/api/v1/admin/cert/applicants/{cert_id}/{action} [get]
+// @Router 		/api/v1/admin/applicants/certs/{certid} [get]
 func GetApplicantList(c *gin.Context) {
 	appG := app.Gin{c}
 
-	certID:= c.Param("cert_id")
-	action := c.Param("action")
+	id		:= com.StrTo(c.Query("certid")).MustInt()
+	page 	:= com.StrTo(c.Query("page")).MustInt()
+	limit	:= com.StrTo(c.Query("limit")).MustInt()
+	action	:= c.Param("type")
 
-	page := com.StrTo(c.Query("page")).MustInt()
-	limit := com.StrTo(c.Query("limit")).MustInt()
-	id := com.StrTo(c.Query("cert_id")).MustInt()
-
-	if isExist, _ := cert_service.CheckExistByID(id); isExist {
+	if notExist, _ := cert_service.CheckExistByID(id); notExist {
 		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
 		return
 	}
 
-	appG.Response(http.StatusOK, true, e.SUCCESS, cert_service.GetApplyList(certID, action, page, limit))
+	appG.Response(http.StatusOK, true, e.SUCCESS, cert_service.GetApplyList(c.Param("certid"), action, page, limit))
 }
 
 // @Summary 添加证书
@@ -59,7 +57,7 @@ func GetApplicantList(c *gin.Context) {
 // @Produce json
 // @Param   certInfo body models.C_certs true "证书详细信息"
 // @Success 200 {object} app.ResponseMsg "certID 不需要填写, 失败返回 false 及 msg"
-// @Router  /api/v1/admin/cert/add [post]
+// @Router  /api/v1/admin/certs [post]
 func AddCert(c *gin.Context) {
 	appG := app.Gin{c}
 
@@ -103,8 +101,8 @@ func AddCert(c *gin.Context) {
 // @Tags 	后台管理
 // @Produce json
 // @Param   positions body models.ImageDesigner false "证书详细信息"
-// @Success  200 {object} app.ResponseMsg "data:{"image_save_path":"upload/images/96a.jpg", "image_url": "http://..."}"
-// @Router  /api/v1/admin/cert/preview [get]
+// @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"upload/images/96a.jpg", "image_url": "http://..."}"
+// @Router  /api/v1/admin/images/certs [get]
 func PreviewImage(c *gin.Context) {
 	appG := app.Gin{c}
 
@@ -184,7 +182,7 @@ func GetFonts(c *gin.Context) {
 // @Produce  json
 // @Param    image formData file true "证书模板图片"
 // @Success  200 {object} app.ResponseMsg "data:{"image_save_path":"upload/images/96a.jpg", "image_url": "http://..."}"
-// @Router   /api/v1/admin/cert/upload_image [post]
+// @Router   /api/v1/admin/images [post]
 func UploadImage(c *gin.Context) {
 	appG := app.Gin{C: c}
 
@@ -229,24 +227,21 @@ func UploadImage(c *gin.Context) {
 // @Summary  导出用户申领信息
 // @Tags 	 后台管理
 // @Produce  json
-// @Param    cert_id path string true "Cert ID"
-// @Param    action path string true "类型 all | export | verify | passed | Reject"
+// @Param    certid path string true "Cert ID"
+// @Param    type query string true "类型 export | Reject"
 // @Success  200 {object} app.ResponseMsg "data:{"file_save_path":"upload/images/96a.csv", "file_url": "http://..."}"
-// @Router   /api/v1/admin/export/cert/{cert_id}/{action} [post]
+// @Router   /api/v1/admin/files/applicants/certs/{certid} [get]
 func ExportApplicants(c *gin.Context) {
 	appG := app.Gin{c}
 
-	certID:= c.Param("cert_id")
-	action := c.Param("action")
-
-	id := com.StrTo(c.Query("cert_id")).MustInt()
+	id := com.StrTo(c.Query("certid")).MustInt()
 
 	if isExist, _ := cert_service.CheckExistByID(id); isExist {
 		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
 		return
 	}
 
-	filename, _ := cert_service.ExportFile(certID, action)
+	filename, _ := cert_service.ExportFile(c.Param("certid"), c.Param("type"))
 	if filename == "" {
 		appG.Response(http.StatusOK, false, e.ERROR_EXPORT_FILE_FAIL, nil)
 		return
@@ -262,30 +257,21 @@ func ExportApplicants(c *gin.Context) {
 // @Summary  导入审核结果
 // @Tags 	 后台管理
 // @Produce  json
-// @Param    cert_id path string true "Cert ID"
-// @Param    action path string true "类型 verify | Reject"
-// @Param    file_csv formData file true "审核结果.csv"
+// @Param    certid path string true "Cert ID"
+// @Param    excel formData file true "审核结果.csv"
 // @Success  200 {object} app.ResponseMsg "data:{""}"
-// @Router   /api/v1/admin/import/cert/{cert_id}/{action} [post]
+// @Router   /api/v1/admin/applicants/certs/{certid} [post]
 func ImportApplicants(c *gin.Context) {
 	appG := app.Gin{C: c}
 
-	certID:= c.Param("cert_id")
-	action := c.Param("action")
-
-	id := com.StrTo(c.Query("cert_id")).MustInt()
+	id := com.StrTo(c.Query("certid")).MustInt()
 
 	if isExist, _ := cert_service.CheckExistByID(id); isExist {
 		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
 		return
 	}
 
-	if _, ok := models.ActionMsg[action]; !ok {
-		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, nil)
-		return
-	}
-
-	file, excel, err := c.Request.FormFile("file_csv")
+	file, excel, err := c.Request.FormFile("excel")
 	if err != nil {
 		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
@@ -318,7 +304,7 @@ func ImportApplicants(c *gin.Context) {
 	}
 
 	// 解析审核结果
-	cert_service.ImportResult(certID, action, fullPath + saveName)
+	cert_service.ImportResult(c.Param("certid"), "", fullPath + saveName)
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, nil)
 }

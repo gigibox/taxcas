@@ -98,7 +98,76 @@ info:
   contact: {}
   license: {}
 paths:
-  /api/v1/admin/cert/add:
+  /api/v1/admin/applicants/certs/{certid}:
+    get:
+      description: 查询指定证书的申领信息,
+      parameters:
+      - description: Cert ID
+        in: path
+        name: certid
+        required: true
+        type: string
+      - description: 类型 all | export | verify | passed | Reject
+        in: query
+        name: type
+        required: true
+        type: integer
+      - description: 页数
+        in: query
+        name: page
+        type: integer
+      - description: 每页显示的条数
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: data:[{""}]
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 查询证书申领信息
+      tags:
+      - 后台管理
+    post:
+      parameters:
+      - description: Cert ID
+        in: path
+        name: certid
+        required: true
+        type: string
+      - description: 审核结果.csv
+        in: formData
+        name: excel
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: data:{""}
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 导入审核结果
+      tags:
+      - 后台管理
+  /api/v1/admin/certs:
+    get:
+      description: 查询所有证书列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: data:[{"cert_id":"0", "cert_name":"证书1", "status":"enable"}]
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 获取证书列表
+      tags:
+      - 后台管理
     post:
       parameters:
       - description: 证书详细信息
@@ -119,105 +188,17 @@ paths:
       summary: 添加证书
       tags:
       - 后台管理
-  /api/v1/admin/cert/applicants/{cert_id}/{action}:
+  /api/v1/admin/files/applicants/certs/{certid}:
     get:
-      description: 查询指定证书的申领信息,
       parameters:
       - description: Cert ID
         in: path
-        name: cert_id
+        name: certid
         required: true
         type: string
-      - description: 类型 all | export | verify | passed | Reject
-        in: path
-        name: action
-        required: true
-        type: string
-      - description: 页数
+      - description: 类型 export | Reject
         in: query
-        name: page
-        type: integer
-      - description: 每页显示的条数
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: data:[{""}]
-          schema:
-            $ref: '#/definitions/app.ResponseMsg'
-            type: object
-      summary: 查询证书申领信息
-      tags:
-      - 后台管理
-  /api/v1/admin/cert/preview:
-    get:
-      parameters:
-      - description: 证书详细信息
-        in: body
-        name: positions
-        schema:
-          $ref: '#/definitions/models.ImageDesigner'
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 'data:{"image_save_path":"upload/images/96a.jpg", "image_url":
-            "http://..."}'
-          schema:
-            $ref: '#/definitions/app.ResponseMsg'
-            type: object
-      summary: 预览证书
-      tags:
-      - 后台管理
-  /api/v1/admin/cert/upload_image:
-    post:
-      parameters:
-      - description: 证书模板图片
-        in: formData
-        name: image
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 'data:{"image_save_path":"upload/images/96a.jpg", "image_url":
-            "http://..."}'
-          schema:
-            $ref: '#/definitions/app.ResponseMsg'
-            type: object
-      summary: 上传证书模板
-      tags:
-      - 后台管理
-  /api/v1/admin/certs:
-    get:
-      description: 查询所有证书列表
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: data:[{"cert_id":"0", "cert_name":"证书1", "status":"enable"}]
-          schema:
-            $ref: '#/definitions/app.ResponseMsg'
-            type: object
-      summary: 获取证书列表
-      tags:
-      - 后台管理
-  /api/v1/admin/export/cert/{cert_id}/{action}:
-    post:
-      parameters:
-      - description: Cert ID
-        in: path
-        name: cert_id
-        required: true
-        type: string
-      - description: 类型 all | export | verify | passed | Reject
-        in: path
-        name: action
+        name: type
         required: true
         type: string
       produces:
@@ -246,43 +227,50 @@ paths:
       summary: 查询字体列表
       tags:
       - 后台管理
-  /api/v1/admin/import/cert/{cert_id}/{action}:
+  /api/v1/admin/images:
     post:
       parameters:
-      - description: Cert ID
-        in: path
-        name: cert_id
-        required: true
-        type: string
-      - description: 类型 verify | Reject
-        in: path
-        name: action
-        required: true
-        type: string
-      - description: 审核结果.csv
+      - description: 证书模板图片
         in: formData
-        name: file_csv
+        name: image
         required: true
         type: file
       produces:
       - application/json
       responses:
         "200":
-          description: data:{""}
+          description: 'data:{"image_save_path":"upload/images/96a.jpg", "image_url":
+            "http://..."}'
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
-      summary: 导入审核结果
+      summary: 上传证书模板
       tags:
       - 后台管理
-  /api/v1/cert/{cert_id}/apply:
-    put:
+  /api/v1/admin/images/certs:
+    get:
       parameters:
-      - description: Cert ID
-        in: path
-        name: cert_id
-        required: true
-        type: integer
+      - description: 证书详细信息
+        in: body
+        name: positions
+        schema:
+          $ref: '#/definitions/models.ImageDesigner'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'data:{"image_save_path":"upload/images/96a.jpg", "image_url":
+            "http://..."}'
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 预览证书
+      tags:
+      - 后台管理
+  /api/v1/weixin/applicants:
+    post:
+      parameters:
       - description: 用户提交信息
         in: body
         name: applicant

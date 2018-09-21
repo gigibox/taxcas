@@ -33,6 +33,11 @@ const (
 func Setup() {
 	var err error
 	filePath := getLogFilePath()
+
+	if err = file.IsNotExistMkDir(filePath); err != nil {
+		os.Mkdir(filePath + "/" + src, os.ModePerm)
+	}
+
 	fileName := getLogFileName()
 	F, err = file.MustOpen(fileName, filePath)
 	if err != nil {

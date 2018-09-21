@@ -1,2 +1,4 @@
 .idea
 runtime/*
+conf/app.ini
+!runtime/fonts

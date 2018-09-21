@@ -4,19 +4,19 @@ Certificate authentication system is a integrating system, which includes applyi
 
 ## Installation
 ```
-$ go get XXX
+$ go get github.com/KunTengRom/taxcas
 ```
 
 ## How to run
 
 ### Required
 
-- Redis
+- MongoDB
 
 
 ### Run
 ```
-$ cd $GOPATH/src/go-taxcas
+$ cd $GOPATH/src/taxcas
 
 $ go run main.go 
 ```
