@@ -198,7 +198,7 @@ func WXPayRefund(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"msg": "UnifyOder failed"})
 	}
 	//更新退款成功的数据库表，记录退款成功状态
-	c.JSON(http.StatusOK, gin.H{"msg": "SUCCESS", "extra": "退款成功"})
+	c.JSON(http.StatusOK, gin.H{"msg": "SUCCESS", "extra": p})
 }
 
 func WXPayRefundQuery(c *gin.Context) {
@@ -213,7 +213,7 @@ func WXPayRefundQuery(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"msg": "UnifyOder failed"})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"msg": "SUCCESS", "extra": "查询成功"})
+	c.JSON(http.StatusOK, gin.H{"msg": "SUCCESS", "extra": p})
 }
 
 func wxpayVerifySign(needVerifyM map[string]interface{}, sign string) bool {
