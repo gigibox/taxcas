@@ -49,6 +49,16 @@ func MgoUpdate(key, value, col string, doc interface{}) (bool, error) {
 	return true, nil
 }
 
+func MgoUpdateAll(key string, value interface{}, col string, doc interface{}) (bool, error) {
+	c := session.DB(setting.DatabaseSetting.Name).C(setting.DatabaseSetting.TablePrefix + col)
+	_, err := c.UpdateAll(bson.M{key: value}, doc)
+	if err !=nil {
+		return false, err
+	}
+
+	return true, err
+}
+
 func MgoUpsert(key, value, col string, doc interface{}) (bool, error) {
 	c := session.DB(setting.DatabaseSetting.Name).C(setting.DatabaseSetting.TablePrefix + col)
 

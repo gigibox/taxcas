@@ -13,7 +13,7 @@ import (
 )
 
 // @Summary 申请证书
-// @Tags 	用户申请
+// @Tags 	微信公众号
 // @Produce json
 // @Param   applicant body models.Applicant true "用户提交信息"
 // @Success 200 {object} app.ResponseMsg "cost 与 applyStatus 不提交. 失败返回 false 及 msg"
@@ -88,6 +88,33 @@ func ApplyForCert(c *gin.Context) {
 	appG.Response(http.StatusOK, isAdded, e.SUCCESS, err)
 }
 
+// @Summary 查询用户
+// @Tags 	微信公众号
+// @Param   openid path string true "用户openid"
+// @Success 200 {object} app.ResponseMsg "用户基本信息 及 证书申领状态 ["申请证书id" : "申请状态"]"
+// @Router  /api/v1/weixin/users/{openid} [get]
 func GetUserInfo(c *gin.Context) {
+	appG := app.Gin{c}
+
+	user := models.C_users{}
+
+	openid	:= c.Param("openid")
+
+	if ok, err := user_service.GetUser(openid, &user); !ok {
+		logging.Warn(err)
+		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_USER, err)
+		return
+	}
+
+	appG.Response(http.StatusOK, true, e.SUCCESS, user)
+}
+
+// @Summary 	获取证书列表
+// @Tags 		微信公众号
+// @Description 查询所有证书列表
+// @Produce  	json
+// @Success 	200 {object} app.ResponseMsg "data:[{"cert_id":"0", "cert_name":"证书1", "status":"enable"}]"
+// @Router 		/api/v1/weixin/certs [get]
+func GetCertList(c *gin.Context) {
 
 }

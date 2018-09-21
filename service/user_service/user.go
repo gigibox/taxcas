@@ -1,7 +1,6 @@
 package user_service
 
 import (
-	"log"
 	"taxcas/models"
 )
 
@@ -19,7 +18,6 @@ func Add(user models.User) (bool, error){
 
 func UpdateCerts(user models.User, cert_id string, apply_status int) (bool, error) {
 	doc := models.C_users{}
-	log.Println(user, "|", cert_id, "|", apply_status)
 	if isExist, _ := models.MgoFindOne("user.wechatid", user.WechatID, col_users, &doc); !isExist {
 		doc.User = user
 		doc.Certs = append(doc.Certs, map[string]int{cert_id:apply_status})
@@ -44,4 +42,9 @@ func UpdateCerts(user models.User, cert_id string, apply_status int) (bool, erro
 	}
 
 
+}
+
+func GetUser(openid string, doc *models.C_users) (bool, error) {
+
+	return models.MgoFindOne("user.wechatid", openid, col_users, &doc)
 }
