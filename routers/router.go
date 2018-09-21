@@ -78,13 +78,13 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/weixin/certs", admin.GetCertList)
 
 		// 获取openid
-		//apiv1.GET("/weixin/openid", weixin.WXGetOpenID)
+		apiv1.GET("/weixin/openid/:code", weixin.WXGetOpenID)
 
 		// 获取支付订单
-		//apiv1.GET("/weixin/wxorder/:openid", weixin.WXPayUnifyOrderReq)
+		apiv1.GET("/weixin/wxorder/:openid/:certid", weixin.WXPayUnifyOrderReq)
 
 		// 微信服务端回调
-		//apiv1.GET("weixin/wxnotify", weixin.WXPayCallback)
+		apiv1.GET("weixin/wxnotify", weixin.WXPayCallback)
 
 	}
 
