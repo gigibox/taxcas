@@ -29,16 +29,6 @@ func InitRouter() *gin.Engine {
 
 	gin.SetMode(setting.ServerSetting.RunMode)
 
-	// html
-	r.LoadHTMLGlob("views/*")
-	webadmin := r.Group("/admin")
-	webadmin.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", gin.H{"title":"taxcas"})
-	})
-	webadmin.GET("/login", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "login.html", gin.H{"title":"taxcas"})
-	})
-
 	public := r.Group("api")
 	{
 		public.StaticFS("/export", http.Dir(export.GetExportFullPath()))
@@ -79,10 +69,10 @@ func InitRouter() *gin.Engine {
 	// 用户端接口
 	{
 		// 申请证书
-		apiv1.POST("/weixin/applicants/users/:wxid", user.ApplyForCert)
+		apiv1.POST("/weixin/applicants/users/:openid", user.ApplyForCert)
 
 		// 查询用户
-		apiv1.GET("/weixin/users/:wxid", user.GetUserInfo)
+		apiv1.GET("/weixin/users/:openid", user.GetUserInfo)
 
 		// 查询证书
 		apiv1.GET("/weixin/certs", admin.GetCertList)
