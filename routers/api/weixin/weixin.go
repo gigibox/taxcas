@@ -89,7 +89,7 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	result := models.C_certs{}
 	isExist, err := models.MgoFindOne("CertID", certid, "certs", &result)
 	if err != nil {
-		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERTS_FAIL, nil)
+		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT_FAIL, nil)
 	}
 	if isExist == false {
 		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
