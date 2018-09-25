@@ -1,15 +1,4 @@
 definitions:
-  admin.parameters:
-    properties:
-      action:
-        type: string
-      file_path:
-        type: string
-      wechatid:
-        items:
-          type: string
-        type: array
-    type: object
   app.ResponseMsg:
     properties:
       data:
@@ -166,14 +155,16 @@ paths:
       - 后台管理
     put:
       parameters:
-      - description: 'file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝),
-          wechatid: 选中的记录'
-        in: body
-        name: data
+      - description: 导入的csv文件路径
+        in: query
+        name: file
         required: true
-        schema:
-          $ref: '#/definitions/admin.parameters'
-          type: object
+        type: string
+      - description: '审核中: passed, 已拒绝: refunded'
+        in: query
+        name: type
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -351,22 +342,6 @@ paths:
       summary: 获取证书列表
       tags:
       - 微信公众号
-  /api/v1/weixin/openid/{code}:
-    get:
-      parameters:
-      - description: 微信浏览器获取的 code
-        in: path
-        name: code
-        required: true
-        type: string
-      responses:
-        "200":
-          description: '{"openid":string, "token":string}'
-          schema:
-            type: string
-      summary: 获取用户openid
-      tags:
-      - 微信公众号
   /api/v1/weixin/users/{openid}:
     get:
       parameters:
@@ -382,59 +357,6 @@ paths:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
       summary: 查询用户
-      tags:
-      - 微信公众号
-  /api/v1/weixin/wxorder/{openid}/{certid}:
-    get:
-      parameters:
-      - description: 用户 openid
-        in: path
-        name: openid
-        required: true
-        type: string
-      - description: 证书 id
-        in: path
-        name: certid
-        required: true
-        type: string
-      responses:
-        "200":
-          description: '{"prepay_id":string}'
-          schema:
-            type: string
-      summary: 获取支付订单
-      tags:
-      - 微信公众号
-  /api/v1/weixin/wxquery/{out_trade_no}:
-    get:
-      parameters:
-      - description: 付款订单号
-        in: path
-        name: out_trade_no
-        required: true
-        type: string
-      responses:
-        "200":
-          description: '{"msg":string, "extra":}'
-          schema:
-            type: string
-      summary: 查询退款
-      tags:
-      - 微信公众号
-  /api/v1/weixin/wxrefund/{out_trade_no}:
-    get:
-      parameters:
-      - description: 付款订单号
-        in: path
-        name: out_trade_no
-        required: true
-        type: string
-      responses:
-        "200":
-          description: '{"msg":string, "extra":}'
-          schema:
-            type: string
-      summary: 申请退款
       tags:
       - 微信公众号
 swagger: "2.0"

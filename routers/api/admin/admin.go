@@ -31,7 +31,7 @@ func GetCertList(c *gin.Context) {
 // @Tags 		后台管理
 // @Description 查询指定证书的申领信息,
 // @Param   	certid path string true "Cert ID"
-// @Param   	type query int true "类型 all | export | verify | passed | Reject"
+// @Param   	type query string true "类型 all | export | verify | passed | Reject"
 // @Param   	page query int false "页数"
 // @Param   	limit query int false "每页显示的条数"
 // @Produce  	json

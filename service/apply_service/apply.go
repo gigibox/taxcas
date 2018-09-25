@@ -38,6 +38,16 @@ func (this *S_Apply) CheckApplyStatus() (bool, error) {
 	return false, nil
 }
 
+func (this *S_Apply) UpdateSerialNumber() (bool){
+	sn, ok := models.GenerateCertSN(this.Data.StudyDate, this.Data.Province, this.Data.CertID)
+	if !ok {
+		return false
+	} else {
+		this.Data.SerialNumber = sn
+		return true
+	}
+}
+
 func (this *S_Apply) Add() (bool, error) {
 	return models.MgoInsert(this.Data, this.Collection)
 }
@@ -81,7 +91,6 @@ func New(col string, commit models.Applicant) (*S_Apply) {
 		},
 	}
 }
-
 
 func parseAction(action string) (string, interface{}) {
 	flag, ok := models.ActionMsg[action]

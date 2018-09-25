@@ -17,7 +17,7 @@ import (
 // @Produce json
 // @Param   applicant body models.Applicant true "用户提交信息"
 // @Success 200 {object} app.ResponseMsg "cost 与 applyStatus 不提交. 失败返回 false 及 msg"
-// @Router  /api/v1/weixin/applicants [post]
+// @Router  /api/v1/weixin/applicants/users [post]
 func ApplyForCert(c *gin.Context) {
 	appG := app.Gin{c}
 
@@ -66,6 +66,11 @@ func ApplyForCert(c *gin.Context) {
 	if !isOpen {
 		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.ERROR_CERT_APPLY_DISABLED, err)
+		return
+	}
+
+	if !applyService.UpdateSerialNumber() {
+		appG.Response(http.StatusOK, false, e.ERROR, "生成证书编号错误")
 		return
 	}
 
