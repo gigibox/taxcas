@@ -45,14 +45,13 @@ func WXGetOpenID(c *gin.Context) {
 
 	resp, err := http.Get(url)
 	if err != nil || resp.StatusCode != http.StatusOK {
-		fmt.Println("response err!")
-		fmt.Println(err)
+		appG.Response(http.StatusOK, false, e.ERROR, nil)
 	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("io err!")
+		appG.Response(http.StatusOK, false, e.ERROR, nil)
 	}
 
 	fmt.Println("+++++++++++++++++++++++++")
@@ -62,7 +61,7 @@ func WXGetOpenID(c *gin.Context) {
 	result := Response{}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		fmt.Println(err)
+		appG.Response(http.StatusOK, false, e.ERROR, nil)
 	}
 
 	openid := result.Openid
@@ -90,10 +89,10 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	result := models.C_certs{}
 	isExist, err := models.MgoFindOne("CertID", certid, "certs", &result)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"msg": "FAIL", "extra": "查找数据库失败"})
+		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERTS_FAIL, nil)
 	}
 	if isExist == false {
-		c.JSON(http.StatusNotFound, gin.H{"msg": "FAIL", "extra": "没有找到此证书"})
+		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
 	}
 
 	price := result.Price
@@ -112,7 +111,7 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 
 	p, err := client.UnifiedOrder(params)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"msg": "UnifyOder failed"})
+		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, nil)
 	}
 
 	prepay_id := p.GetString("prepay_id")
