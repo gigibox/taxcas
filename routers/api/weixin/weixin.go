@@ -27,6 +27,7 @@ import (
 // @Success 200 {string} json "{"openid":string, "token":string}"
 // @Router  /api/v1/weixin/openid/{code} [get]
 func WXGetOpenID(c *gin.Context) {
+	appG := app.Gin{c}
 	type Response struct {
 		Access_token  string `json:"access_token"`
 		Expires_in    int    `json:"expires_in"`
@@ -68,7 +69,11 @@ func WXGetOpenID(c *gin.Context) {
 	fmt.Println("=======================")
 	fmt.Println(result)
 	fmt.Println("=======================")
-	c.JSON(http.StatusOK, gin.H{"openid": openid, "token": "123456"})
+	//c.JSON(http.StatusOK, gin.H{"openid": openid, "token": "123456"})
+	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
+		"openid": openid,
+		"token":  "123456",
+	})
 }
 
 // @Summary 获取支付订单
