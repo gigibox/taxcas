@@ -1,23 +1,23 @@
 package weixin
 
 import (
-	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/objcoding/wxpay"
-	"net/http"
-	//"taxcas/pkg/app"
-	//"taxcas/pkg/e"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/objcoding/wxpay"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"sort"
 	"strings"
 	"taxcas/models"
+	"taxcas/pkg/app"
 	"taxcas/pkg/config"
+	"taxcas/pkg/e"
 	//	"errors"
 )
 
@@ -78,7 +78,7 @@ func WXGetOpenID(c *gin.Context) {
 // @Success 200 {string} json "{"prepay_id":string}"
 // @Router  /api/v1/weixin/wxorder/{openid}/{certid} [get]
 func WXPayUnifyOrderReq(c *gin.Context) {
-	//appG := app.Gin{c}
+	appG := app.Gin{c}
 	ip := c.ClientIP()
 	openid := c.Param("openid")
 	certid := c.Param("certid")
@@ -111,8 +111,13 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	}
 
 	prepay_id := p.GetString("prepay_id")
-	//	appG.Response(http.StatusOK, true, e.SUCCESS, p)
-	c.JSON(http.StatusOK, gin.H{"prepay_id": prepay_id})
+	appid := p.GetString("appid")
+	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
+		"prepay_id": prepay_id,
+		"appid":     appid,
+		"total_fee": price,
+	})
+	//c.JSON(http.StatusOK, gin.H{"prepay_id": prepay_id, "appid": appid})
 }
 
 type WXPayNotifyReq struct {
