@@ -3,23 +3,33 @@ package main
 import (
 	"fmt"
 	"github.com/fvbock/endless"
-	"log"
 	"net/http"
 	"runtime"
 	"syscall"
+	"taxcas/pkg/export"
 	"taxcas/pkg/gredis"
 	"taxcas/pkg/logging"
 	"taxcas/pkg/setting"
+	"taxcas/pkg/upload"
 
 	"taxcas/models"
 	"taxcas/routers"
 )
 
+// @title TAXCAS Example API
+// @version 1.0
+// @description Certificate authentication system.
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	setting.Setup()
 	models.Setup()
 	logging.Setup()
 	gredis.Setup()
+	upload.Setup()
+	export.Setup()
 
 	routersInit := routers.InitRouter()
 	readTimeout := setting.ServerSetting.ReadTimeout
@@ -45,12 +55,12 @@ func main() {
 	endless.DefaultMaxHeaderBytes = maxHeaderBytes
 	server := endless.NewServer(endPoint, routersInit)
 	server.BeforeBegin = func(add string) {
-		log.Printf("Actual pid is %d", syscall.Getpid())
+		logging.Info("Actual pid is %d", syscall.Getpid())
 	}
 
 	err := server.ListenAndServe()
 	if err != nil {
-		log.Printf("Server err: %v", err)
+		logging.Error("Server err: %v", err)
 	}
 
 }

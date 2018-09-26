@@ -9,9 +9,9 @@ import (
 	"taxcas/models"
 	"taxcas/pkg/app"
 	"taxcas/pkg/e"
-	"taxcas/pkg/export"
 	"taxcas/pkg/logging"
 	"taxcas/pkg/upload"
+	"taxcas/pkg/util"
 	"taxcas/service/apply_service"
 	"taxcas/service/cert_service"
 )
@@ -19,9 +19,13 @@ import (
 // @Summary 	获取证书列表
 // @Tags 		后台管理
 // @Description 查询所有证书列表
+// @Security	ApiKeyAuth
 // @Produce  	json
 // @Success 	200 {object} app.ResponseMsg "data:[{"cert_id":"0", "cert_name":"证书1", "status":"enable"}]"
 // @Router 		/api/v1/admin/certs [get]
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func GetCertList(c *gin.Context) {
 	appG := app.Gin{c}
 	appG.Response(http.StatusOK, true, e.SUCCESS, cert_service.GetAllCertName())
@@ -29,7 +33,8 @@ func GetCertList(c *gin.Context) {
 
 // @Summary 	查询证书申领信息
 // @Tags 		后台管理
-// @Description 查询指定证书的申领信息,
+// @Description 查询指定证书的申领信息
+// @Security	ApiKeyAuth
 // @Param   	certid path string true "Cert ID"
 // @Param   	type query string true "类型 all | export | verify | passed | Reject"
 // @Param   	page query int false "页数"
@@ -40,21 +45,22 @@ func GetCertList(c *gin.Context) {
 func GetApplicantList(c *gin.Context) {
 	appG := app.Gin{c}
 
-	id		:= com.StrTo(c.Query("certid")).MustInt()
+	id		:= c.Param("certid")
+	act		:= c.Param("type")
 	page 	:= com.StrTo(c.Query("page")).MustInt()
 	limit	:= com.StrTo(c.Query("limit")).MustInt()
-	action	:= c.Param("type")
 
 	if notExist, _ := cert_service.CheckExistByID(id); notExist {
 		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
 		return
 	}
 
-	appG.Response(http.StatusOK, true, e.SUCCESS, apply_service.GetApplyList(c.Param("certid"), action, page, limit))
+	appG.Response(http.StatusOK, true, e.SUCCESS, apply_service.GetApplyList(c.Param("certid"), act, page, limit))
 }
 
 // @Summary 添加证书
 // @Tags 	后台管理
+// @Security	ApiKeyAuth
 // @Produce json
 // @Param   certInfo body models.C_certs true "证书详细信息"
 // @Success 200 {object} app.ResponseMsg "certID 不需要填写, 失败返回 false 及 msg"
@@ -67,13 +73,13 @@ func AddCert(c *gin.Context) {
 
 	contentType := c.Request.Header.Get("Content-Type")
 	switch contentType {
-	case "application/json":
-		err = c.BindJSON(&cert)
-	case "application/x-www-form-urlencoded":
-		err = c.MustBindWith(&cert, binding.FormPost)
+		case "application/json":
+			err = c.BindJSON(&cert)
+		case "application/x-www-form-urlencoded":
+			err = c.MustBindWith(&cert, binding.FormPost)
 	}
+
 	if err != nil {
-		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
 		return
 	}
@@ -93,6 +99,11 @@ func AddCert(c *gin.Context) {
 		return
 	}
 
+	// 暂时写死设计模板
+	n := cert.ImageDesign.ImgName
+	cert.ImageDesign = models.GlobalDesigner
+	cert.ImageDesign.ImgName = n
+
 	isAdded, err := certService.Add()
 
 	appG.Response(http.StatusOK, isAdded, e.SUCCESS, err)
@@ -100,75 +111,40 @@ func AddCert(c *gin.Context) {
 
 // @Summary 预览证书
 // @Tags 	后台管理
+// @Security ApiKeyAuth
 // @Produce json
 // @Param   positions body models.ImageDesigner false "证书详细信息"
 // @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"upload/images/96a.jpg", "image_url": "http://..."}"
-// @Router  /api/v1/admin/images/certs [get]
+// @Router  /api/v1/admin/images/certs[get]
 func PreviewImage(c *gin.Context) {
 	appG := app.Gin{c}
 
 	var design models.ImageDesigner
 
 	if err := c.Bind(&design); err != nil {
-		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
 		return
 	}
 
-	design.Name.Str = "李雷"
-	design.EnglishName.Str = "LiLei"
-	design.PersonalID.Str = "110010201010010101"
-	design.SerialNumber.Str = "2018091401012345"
-	design.Date.Str = "2018 年 9 月 14 日"
-	// 暂时写死
-	design.Name = models.Coord{
-		Font: "微软雅黑",
-		FontSize: 12,
-		X: 230,
-		Y: 240,
-	}
-	design.EnglishName = models.Coord{
-		Font: "微软雅黑",
-		FontSize: 12,
-		X: 230,
-		Y: 240,
-	}
-	design.PersonalID = models.Coord{
-		Font: "微软雅黑",
-		FontSize: 12,
-		X: 230,
-		Y: 240,
-	}
-	design.SerialNumber = models.Coord{
-		Font: "微软雅黑",
-		FontSize: 12,
-		X: 230,
-		Y: 240,
-	}
-	design.Date = models.Coord{
-		Font: "微软雅黑",
-		FontSize: 12,
-		X: 230,
-		Y: 240,
-	}
-	imageName, err := cert_service.SignCertImage(design)
+	t := models.GlobalDesigner
+	t.ImgName = design.ImgName
+
+	image, err := cert_service.GetCertImage(&t, "", "")
 	if err != nil {
-		appG.Response(http.StatusOK, true, e.ERROR_UPLOAD_CREATE_IMAGE_FAIL, map[string]string{
-			"imageURL":      upload.GetImageFullUrl(imageName),
-			"imageSavePath": upload.GetImagePath() + imageName,
-		})
+		appG.Response(http.StatusOK, true, e.ERROR_UPLOAD_CREATE_IMAGE_FAIL, nil)
 
 		return
 	}
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
-		"imageURL":      upload.GetImageFullUrl(imageName),
-		"imageSavePath": upload.GetImagePath() + imageName,
+		"imageURL":      util.GetAppFullUrl(image),
+		"imageSavePath": image,
 	})
 }
 
 // @Summary  查询字体列表
 // @Tags 	 后台管理
+// @Security ApiKeyAuth
 // @Produce  json
 // @Success  200 {object} app.ResponseMsg "data:{"image_save_path":"upload/images/96a.jpg", "image_url": "http://..."}"
 // @Router   /api/v1/admin/fonts [get]
@@ -180,6 +156,7 @@ func GetFonts(c *gin.Context) {
 
 // @Summary  上传证书模板
 // @Tags 	 后台管理
+// @Security ApiKeyAuth
 // @Produce  json
 // @Param    image formData file true "证书模板图片"
 // @Success  200 {object} app.ResponseMsg "data:{"image_save_path":"upload/images/96a.jpg", "image_url": "http://..."}"
@@ -189,7 +166,6 @@ func UploadImage(c *gin.Context) {
 
 	file, image, err := c.Request.FormFile("image")
 	if err != nil {
-		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
 		return
 	}
@@ -199,17 +175,11 @@ func UploadImage(c *gin.Context) {
 		return
 	}
 
-	imageName := upload.GetRandomFileName(image.Filename)
+	imageName := util.GetRandomFileName(image.Filename)
 	fullPath  := upload.GetImageFullPath()
 
 	if !upload.CheckImageExt(imageName) || !upload.CheckFileSize(file) {
 		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_CHECK_IMAGE_FORMAT, nil)
-		return
-	}
-
-	if err := upload.CheckDir(fullPath); err != nil {
-		logging.Warn(err)
-		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_CHECK_IMAGE_FAIL, err)
 		return
 	}
 
@@ -220,13 +190,14 @@ func UploadImage(c *gin.Context) {
 	}
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
-		"imageURL":      upload.GetImageFullUrl(imageName),
+		"imageURL":      util.GetAppFullUrl(imageName),
 		"imageSavePath": upload.GetImagePath() + imageName,
 	})
 }
 
 // @Summary  导入文件
 // @Tags 	 后台管理
+// @Security ApiKeyAuth
 // @Param    excel formData file true "审核结果.csv"
 // @Success  200 {object} app.ResponseMsg "data:{""}"
 // @Router   /api/v1/admin/excels [post]
@@ -235,7 +206,6 @@ func UploadExcel(c *gin.Context) {
 
 	file, excel, err := c.Request.FormFile("excel")
 	if err != nil {
-		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
 		return
 	}
@@ -245,17 +215,11 @@ func UploadExcel(c *gin.Context) {
 		return
 	}
 
-	saveName := upload.GetRandomFileName(excel.Filename)
+	saveName := util.GetRandomFileName(excel.Filename)
 	fullPath := upload.GetExcelFullPath()
 
 	if !upload.CheckExcelExt(saveName) || !upload.CheckFileSize(file) {
 		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_CHECK_FILE_FORMAT, nil)
-		return
-	}
-
-	if err := upload.CheckDir(fullPath); err != nil {
-		logging.Warn(err)
-		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_CHECK_FILE_FAIL, err)
 		return
 	}
 
@@ -272,6 +236,7 @@ func UploadExcel(c *gin.Context) {
 
 // @Summary  导出用户申领信息
 // @Tags 	 后台管理
+// @Security ApiKeyAuth
 // @Produce  json
 // @Param    certid path string true "Cert ID"
 // @Param    type query string true "类型 export | Reject"
@@ -280,22 +245,22 @@ func UploadExcel(c *gin.Context) {
 func ExportApplicants(c *gin.Context) {
 	appG := app.Gin{c}
 
-	id := com.StrTo(c.Query("certid")).MustInt()
+	certid := c.Param("certid")
 
-	if isExist, _ := cert_service.CheckExistByID(id); isExist {
+	if isExist, _ := cert_service.CheckExistByID(certid); isExist {
 		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
 		return
 	}
 
-	filename, _ := apply_service.ExportFile(c.Param("certid"), c.Param("type"))
+	filename, _ := apply_service.ExportFile(certid, c.Query("type"))
 	if filename == "" {
 		appG.Response(http.StatusOK, false, e.ERROR_EXPORT_FILE_FAIL, nil)
 		return
 	}
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
-		"file_url":      export.GetExportFullUrl(filename),
-		"file_save_path": export.GetExportPath() + filename,
+		"file_url":      util.GetAppFullUrl(filename),
+		"file_save_path": filename,
 	})
 }
 
@@ -306,6 +271,7 @@ type parameters struct {
 }
 // @Summary  执行审核结果
 // @Tags 	 后台管理
+// @Security ApiKeyAuth
 // @Produce  json
 // @Param    data body admin.parameters true "file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝), wechatid: 选中的记录"
 // @Success  200 {object} app.ResponseMsg "data:{""}"
@@ -316,24 +282,61 @@ func UpdateApplicants(c *gin.Context) {
 	params := parameters{}
 	err := c.BindJSON(&params)
 	if err != nil {
-		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
 		return
 	}
 
 	// 检查证书id是否存在
-	id := com.StrTo(c.Query("certid")).MustInt()
+	certid := c.Param("certid")
 
-	if isExist, _ := cert_service.CheckExistByID(id); isExist {
+	if isExist, _ := cert_service.CheckExistByID(certid); isExist {
 		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
 		return
 	}
 
 	// 解析审核结果
-	s, f := apply_service.UpdateApplicants(c.Param("certid"), params.Action, params.FilePath, params.Wechatid)
+	s, f := apply_service.UpdateApplicants(certid, params.Action, params.FilePath, params.Wechatid)
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]int{
 		"success" : s,
 		"failure" : f,
 	})
+}
+
+// @Summary 查看用户证书
+// @Tags 	后台管理
+// @Security ApiKeyAuth
+// @Produce json
+// @Param   certid path string true "证书id"
+// @Param   wechatid path string true "用户微信id"
+// @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
+// @Router  /api/v1/admin/images/certs/{certid}/{wechatid} [get]
+func UserCertificates(c *gin.Context) {
+	appG := app.Gin{c}
+
+	certid := c.Param("certid")
+	wechatid := c.Param("wechatid")
+
+	image, err := cert_service.GetCertImage(nil, certid, wechatid)
+	if image == "" {
+		appG.Response(http.StatusOK, false, e.ERROR_GET_USER_CERT_IMAGES, err)
+		return
+	}
+
+	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
+		"imageURL":      util.GetAppFullUrl(image),
+		"imageSavePath": image,
+	})
+}
+
+// @Summary 查看用户证书
+// @Tags 	微信公众号
+// @Security ApiKeyAuth
+// @Produce json
+// @Param   certid path string true "证书id"
+// @Param   wechatid path string true "用户微信id"
+// @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
+// @Router  /api/v1/weixin/images/certs/{certid}/{wechatid} [get]
+func ___c() {
+
 }

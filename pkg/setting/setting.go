@@ -15,12 +15,10 @@ type App struct {
 	RuntimeRootPath string
 	UploadAllowMaxSize   int
 
-	ImageSavePath  string
 	ImageAllowExts []string
-
-	ExcelSavePath  string
 	ExcelAllowExts []string
 
+	UploadSavePath string
 	ExportSavePath string
 	QrCodeSavePath string
 	FontSavePath string

@@ -2,6 +2,7 @@ package apply_service
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -61,11 +62,6 @@ func (this *S_Apply) UpdateStatus(certid string) (bool) {
 			return false
 		}
 
-		// 判断为已通过, 生成证书编号
-		if statusCode == models.Passed {
-
-		}
-
 		// 判断为退款请求, 发起退款申请
 		if statusCode == models.Refunded {
 
@@ -122,11 +118,17 @@ func GetApplyList(id, action string, page, limit int) (interface{}) {
 	}
 }
 
+func GetApplyByOpenid(certid, openid string, doc *models.C_Apply) (bool, error) {
+
+	return models.MgoFindOne("applicant.user.wechatid", openid, "cert" + certid + "_apply", &doc)
+}
+
 // 根据请求类型判断需要导出的字段
 var title = map[string][]string {
-	"export" : []string{"申请证书", "微信ID", "申请人", "身份证号", "申请时间", "支付金额"},
+	"export" : []string{"编号", "申请证书", "微信ID", "申请人", "身份证号", "申请时间", "支付金额"},
 }
 func ExportFile(certid, act string) (string, error) {
+	fmt.Println(certid, " ", act)
 	code, ok := models.ActionMsg[act]
 	if !ok {
 		return "", nil
@@ -139,10 +141,10 @@ func ExportFile(certid, act string) (string, error) {
 
 	// 文件名已查询条件 + 时间 命名
 	timestamp := strconv.Itoa(int(time.Now().Unix()))
-	filename := models.StatusMsg[code] + "-" +  timestamp + ".csv"
+	filecsv := export.GetExportExcelPath() + models.StatusMsg[code] + "-" +  timestamp + ".csv"
 
 	// 创建 csv 文件
-	f, err := os.Create(export.GetExportFullPath() + filename)
+	f, err := os.Create(export.GetRuntimePath() + filecsv)
 	if err != nil {
 		panic(err)
 	}
@@ -159,14 +161,13 @@ func ExportFile(certid, act string) (string, error) {
 	data := [][]string{}
 
 	for i := range docs {
-		t := time.Unix(int64 (docs[i].ApplyDate), 0)
-
 		row := []string{
+			docs[i].SerialNumber,
 			docs[i].CertName,
 			docs[i].WechatID,
 			docs[i].Name,
 			docs[i].PersonalID,
-			t.Format("2018-09-19 17:27:27"),
+			docs[i].StudyDate,
 			strconv.Itoa(docs[i].PayAmount),
 		}
 
@@ -202,7 +203,7 @@ func ExportFile(certid, act string) (string, error) {
 		user_service.UpdateCerts(user, certid, newCode)
 	}
 
-	return filename, err
+	return filecsv, err
 }
 
 func UpdateApplicants(certid, act, file string, wxids []string) (int, int) {
@@ -247,7 +248,7 @@ func UpdateApplicants(certid, act, file string, wxids []string) (int, int) {
 				continue
 			}
 
-			applyService.Data.WechatID = record[1]
+			applyService.Data.WechatID = record[2]
 			if ok := applyService.UpdateStatus(certid); ok {
 				succeed ++
 			} else {

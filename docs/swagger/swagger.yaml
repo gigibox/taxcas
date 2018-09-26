@@ -1,4 +1,15 @@
 definitions:
+  admin.parameters:
+    properties:
+      action:
+        type: string
+      file_path:
+        type: string
+      wechatid:
+        items:
+          type: string
+        type: array
+    type: object
   app.ResponseMsg:
     properties:
       data:
@@ -50,7 +61,7 @@ definitions:
       authority:
         type: string
       cert_id:
-        type: integer
+        type: string
       cert_name:
         type: string
       image_design:
@@ -96,7 +107,10 @@ definitions:
     type: object
 info:
   contact: {}
+  description: Certificate authentication system.
   license: {}
+  title: TAXCAS Example API
+  version: "1.0"
 paths:
   /api/auth:
     get:
@@ -122,7 +136,7 @@ paths:
       - 认证授权
   /api/v1/admin/applicants/certs/{certid}:
     get:
-      description: 查询指定证书的申领信息,
+      description: 查询指定证书的申领信息
       parameters:
       - description: Cert ID
         in: path
@@ -133,7 +147,7 @@ paths:
         in: query
         name: type
         required: true
-        type: integer
+        type: string
       - description: 页数
         in: query
         name: page
@@ -150,21 +164,21 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: 查询证书申领信息
       tags:
       - 后台管理
     put:
       parameters:
-      - description: 导入的csv文件路径
-        in: query
-        name: file
+      - description: 'file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝),
+          wechatid: 选中的记录'
+        in: body
+        name: data
         required: true
-        type: string
-      - description: '审核中: passed, 已拒绝: refunded'
-        in: query
-        name: type
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/admin.parameters'
+          type: object
       produces:
       - application/json
       responses:
@@ -173,6 +187,8 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: 执行审核结果
       tags:
       - 后台管理
@@ -187,6 +203,8 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: 获取证书列表
       tags:
       - 后台管理
@@ -207,6 +225,8 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: 添加证书
       tags:
       - 后台管理
@@ -224,6 +244,8 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: 导入文件
       tags:
       - 后台管理
@@ -249,6 +271,8 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: 导出用户申领信息
       tags:
       - 后台管理
@@ -263,6 +287,8 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: 查询字体列表
       tags:
       - 后台管理
@@ -283,10 +309,12 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: 上传证书模板
       tags:
       - 后台管理
-  /api/v1/admin/images/certs:
+  /api/v1/admin/images/cert:
     get:
       parameters:
       - description: 证书详细信息
@@ -304,10 +332,39 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: 预览证书
       tags:
       - 后台管理
-  /api/v1/weixin/applicants:
+  /api/v1/admin/images/certs/{certid}/{wechatid}:
+    get:
+      parameters:
+      - description: 证书id
+        in: path
+        name: certid
+        required: true
+        type: string
+      - description: 用户微信id
+        in: path
+        name: wechatid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'data:{"image_save_path":"export/images/96a.jpg", "image_url":
+            "http://..."}'
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 查看用户证书
+      tags:
+      - 后台管理
+  /api/v1/weixin/applicants/users:
     post:
       parameters:
       - description: 用户提交信息
@@ -325,6 +382,8 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: 申请证书
       tags:
       - 微信公众号
@@ -339,7 +398,52 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: 获取证书列表
+      tags:
+      - 微信公众号
+  /api/v1/weixin/images/certs/{certid}/{wechatid}:
+    get:
+      parameters:
+      - description: 证书id
+        in: path
+        name: certid
+        required: true
+        type: string
+      - description: 用户微信id
+        in: path
+        name: wechatid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'data:{"image_save_path":"export/images/96a.jpg", "image_url":
+            "http://..."}'
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 查看用户证书
+      tags:
+      - 微信公众号
+  /api/v1/weixin/openid/{code}:
+    get:
+      parameters:
+      - description: 微信浏览器获取的 code
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"openid":string, "token":string}'
+          schema:
+            type: string
+      summary: 获取用户openid
       tags:
       - 微信公众号
   /api/v1/weixin/users/{openid}:
@@ -356,7 +460,67 @@ paths:
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: 查询用户
       tags:
       - 微信公众号
+  /api/v1/weixin/wxorder/{openid}/{certid}:
+    get:
+      parameters:
+      - description: 用户 openid
+        in: path
+        name: openid
+        required: true
+        type: string
+      - description: 证书 id
+        in: path
+        name: certid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"prepay_id":string}'
+          schema:
+            type: string
+      summary: 获取支付订单
+      tags:
+      - 微信公众号
+  /api/v1/weixin/wxquery/{out_trade_no}:
+    get:
+      parameters:
+      - description: 付款订单号
+        in: path
+        name: out_trade_no
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"msg":string, "extra":}'
+          schema:
+            type: string
+      summary: 查询退款
+      tags:
+      - 微信公众号
+  /api/v1/weixin/wxrefund/{out_trade_no}:
+    get:
+      parameters:
+      - description: 付款订单号
+        in: path
+        name: out_trade_no
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"msg":string, "extra":}'
+          schema:
+            type: string
+      summary: 申请退款
+      tags:
+      - 微信公众号
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

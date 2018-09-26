@@ -70,7 +70,6 @@ func GenerateCertSN(studyDate, province, certid string) (string, bool) {
 
 	// 更新记录
 	if _, err := MgoUpsert("prefix", doc.Prefix, serialCol, doc); err != nil {
-	//if _, err := MgoInsert(doc, serialCol); err != nil {
 		return result, false
 	}
 

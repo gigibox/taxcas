@@ -76,7 +76,7 @@ type Applicant struct {
 
 // 证书类型表
 type C_certs struct {
-	CertID		 int		`json:"cert_id"`// 证书索引
+	CertID		 string		`json:"cert_id"`// 证书索引
 	CertName	 string		`json:"cert_name" form:"cert_name" valid:"Required"`	// 证书名称
 	Authority	 string		`json:"authority" form:"authority"`	// 证书颁发机构
 	Price		 int	    `json:"price" form:"price"`// 申请费用
@@ -107,4 +107,42 @@ type C_Apply struct {
 	ApplyStatus     int		`json:"apply_status"`	// 申请状态
 	ApplyStatusMsg  string	`json:"apply_status_msg"`//申请状态信息
 	ApplyDate		int  `json:"apply_date"`		// 申请时间
+}
+
+var GlobalDesigner = ImageDesigner{
+	Name : Coord{
+		Str : "李雷",
+		Font: "微软雅黑",
+		FontSize: 20,
+		X: 230,
+		Y: 240,
+	},
+	EnglishName : Coord{
+		Str : "LiLei",
+		Font: "微软雅黑",
+		FontSize: 12,
+		X: 430,
+		Y: 240,
+	},
+	PersonalID : Coord{
+		Str : "110010201010010101",
+		Font: "微软雅黑",
+		FontSize: 12,
+		X: 530,
+		Y: 140,
+	},
+	SerialNumber : Coord{
+		Str : "20180914012345",
+		Font: "微软雅黑",
+		FontSize: 12,
+		X: 830,
+		Y: 240,
+	},
+	Date : Coord{
+		Str : "2018 年 9 月 14 日",
+		Font: "微软雅黑",
+		FontSize: 12,
+		X: 930,
+		Y: 240,
+	},
 }

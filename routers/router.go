@@ -60,6 +60,9 @@ func InitRouter() *gin.Engine {
 		// 预览证书
 		apiv1.GET("/admin/images/certs", admin.PreviewImage)
 
+		// 查看用户证书
+		apiv1.GET("/admin/images/certs/:certid/:wechatid", admin.UserCertificates)
+
 		// 获取申请状态
 		apiv1.GET("/admin/applicants/certs/:certid", admin.GetApplicantList)
 
@@ -90,11 +93,14 @@ func InitRouter() *gin.Engine {
 		// 微信服务端回调
 		apiv1.GET("weixin/wxnotify", weixin.WXPayCallback)
 
-		//申请退款
+		// 申请退款
 		apiv1.GET("weixin/wxrefund/:out_trade_no", weixin.WXPayRefund)
 
-		//查询退款
+		// 查询退款
 		apiv1.GET("weixin/wxquery/:out_refund_no", weixin.WXPayRefundQuery)
+
+		// 查看证书
+		apiv1.GET("/weixin/images/certs/:certid/:wechatid", admin.UserCertificates)
 	}
 
 	return r

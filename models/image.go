@@ -8,13 +8,10 @@ import (
 	"image/png"
 	"io"
 	"io/ioutil"
-	"log"
 	"taxcas/pkg/setting"
 
-	//"log"
 	"os"
 	"taxcas/pkg/logging"
-	"taxcas/pkg/upload"
 )
 
 const (
@@ -43,7 +40,6 @@ func initFont(fontPath string) (*truetype.Font, error) {
 }
 
 func (this *Signer) SetFont(fontPath string, fontSize float64) (bool) {
-	log.Println(fontPath)
 	font, err := initFont(fontPath)
 	if err != nil {
 		return false
@@ -66,7 +62,7 @@ func (this *Signer) SetSignPoint(x int, y int) {
 	this.signPoint = image.Pt(x, y)
 }
 
-func (this *Signer) Sign(input io.Reader, output io.Writer, design ImageDesigner) error {
+func (this *Signer) Sign(input io.Reader, output io.Writer, design *ImageDesigner) error {
 	var (
 		origin image.Image
 		err    error
@@ -74,7 +70,7 @@ func (this *Signer) Sign(input io.Reader, output io.Writer, design ImageDesigner
 
 	origin, err = png.Decode(input)
 	if err != nil {
-		log.Println("image decode error(%v)", err)
+		logging.Warn("image decode error(%v)", err)
 		return err
 	}
 
@@ -96,7 +92,7 @@ func (this *Signer) Sign(input io.Reader, output io.Writer, design ImageDesigner
 
 			mask, err := this.drawStringImage(coords[i].Str)
 			if err != nil {
-				log.Println("drawStringImage error(%v)", err)
+				logging.Warn("drawStringImage error(%v)", err)
 				return err
 			}
 			draw.Draw(dst, mask.Bounds().Add(this.startPoint), mask, image.ZP, draw.Over)
@@ -105,7 +101,7 @@ func (this *Signer) Sign(input io.Reader, output io.Writer, design ImageDesigner
 
 	err = png.Encode(output, dst)
 	if err != nil {
-		log.Println("image encode error(%v)", err)
+		logging.Warn("image encode error(%v)", err)
 		return err
 	}
 	return nil
@@ -128,27 +124,25 @@ func (this *Signer) drawStringImage(text string) (image.Image, error) {
 	// Draw the text.
 	pt := freetype.Pt(10, 10+int(c.PointToFixed(12)>>8))
 	if _, err := c.DrawString(text, pt); err != nil {
-		log.Println("c.DrawString(%s) error(%v)", text, err)
+		logging.Warn("c.DrawString(%s) error(%v)", text, err)
 		return nil, err
 	}
 
 	return rgba, nil
 }
 
-func SignImage(design ImageDesigner) (string, error) {
+func SignImage(imagePath string,  design *ImageDesigner) (error) {
 	srcImage, err := os.Open(setting.AppSetting.RuntimeRootPath + design.ImgName)
 	if err != nil {
 		logging.Warn(err)
-		return "", err
+		return err
 	}
 	defer srcImage.Close()
 
-	ImageName := upload.GetRandomFileName("image.png")
-	saveImageName := upload.GetImageFullPath() + ImageName
-	saveImage, err := os.OpenFile(saveImageName,  os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	saveImage, err := os.OpenFile(setting.AppSetting.RuntimeRootPath + imagePath,  os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		logging.Warn(err)
-		return "", err
+		return err
 	}
 	defer saveImage.Close()
 
@@ -156,13 +150,12 @@ func SignImage(design ImageDesigner) (string, error) {
 		FontSize:   DefaultFontSize,
 		Dpi:        DefaultDpi,
 		startPoint: image.ZP,
-		signPoint:  image.Point{X: 640, Y: 480},
+		signPoint:  image.Point{X: 595, Y: 842}, // A4 72dpi
 	}
 
-	err = signWriter.Sign(srcImage, saveImage, design)
-	if err != nil {
-		return "", err
+	if err := signWriter.Sign(srcImage, saveImage, design); err != nil {
+		return err
 	}
 
-	return ImageName, nil
+	return nil
 }

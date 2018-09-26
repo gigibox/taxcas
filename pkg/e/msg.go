@@ -39,6 +39,8 @@ var MsgFlags = map[int]string{
 	ERROR_EXIST_APPLY:				 "用户已申请过该证书",
 	ERROR_CHECK_EXIST_APPLY_FAIL:	 "检测用户是否已申请证书失败",
 	ERROR_ADD_APPLY:				 "提交申请失败",
+	ERROR_GET_USER_CERT_IMAGES:		 "未查询到该用户的电子证书",
+	ERROR_GET_USER_CERT_FILES:		 "未查询到该用户的电子证书",
 }
 
 func GetMsg(code int) string {

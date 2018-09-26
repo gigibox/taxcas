@@ -14,6 +14,7 @@ import (
 
 // @Summary 申请证书
 // @Tags 	微信公众号
+// @Security ApiKeyAuth
 // @Produce json
 // @Param   applicant body models.Applicant true "用户提交信息"
 // @Success 200 {object} app.ResponseMsg "cost 与 applyStatus 不提交. 失败返回 false 及 msg"
@@ -69,6 +70,7 @@ func ApplyForCert(c *gin.Context) {
 		return
 	}
 
+	// 生成编号
 	if !applyService.UpdateSerialNumber() {
 		appG.Response(http.StatusOK, false, e.ERROR, "生成证书编号错误")
 		return
@@ -95,6 +97,7 @@ func ApplyForCert(c *gin.Context) {
 
 // @Summary 查询用户
 // @Tags 	微信公众号
+// @Security ApiKeyAuth
 // @Param   openid path string true "用户openid"
 // @Success 200 {object} app.ResponseMsg "用户基本信息 及 证书申领状态 ["申请证书id" : "申请状态"]"
 // @Router  /api/v1/weixin/users/{openid} [get]
@@ -116,6 +119,7 @@ func GetUserInfo(c *gin.Context) {
 
 // @Summary 	获取证书列表
 // @Tags 		微信公众号
+// @Security	ApiKeyAuth
 // @Description 查询所有证书列表
 // @Produce  	json
 // @Success 	200 {object} app.ResponseMsg "data:[{"cert_id":"0", "cert_name":"证书1", "status":"enable"}]"
