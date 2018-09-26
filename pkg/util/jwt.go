@@ -2,6 +2,7 @@ package util
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"taxcas/pkg/logging"
 	"taxcas/pkg/setting"
 	"time"
 )
@@ -9,28 +10,41 @@ import (
 var jwtSecret = []byte(setting.AppSetting.JwtSecret)
 
 type Claims struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	User string `json:"user"`
+	Permission string `json:"permission"`
 	jwt.StandardClaims
 }
 
-func GenerateToken(username, password string) (string, error) {
+func getExpireTime(rols string) (int64) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(3 * time.Hour)
+	expireTime := nowTime.Add(1 * time.Hour)
 
+	switch rols {
+		case "admin":
+			expireTime = nowTime.Add(10 * time.Minute)
+	}
+
+	return expireTime.Unix()
+}
+
+func GenerateToken(roles, user string) (string) {
 	claims := Claims{
-		EncodeMD5(username),
-		EncodeMD5(password),
+		user,
+		roles,
 		jwt.StandardClaims{
-			ExpiresAt: expireTime.Unix(),
-			Issuer:    "gin-taxcas",
+			IssuedAt: time.Now().Unix(),
+			ExpiresAt: getExpireTime(roles),
+			Issuer:    "taxcas-caishuidai",
 		},
 	}
 
 	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	token, err := tokenClaims.SignedString(jwtSecret)
+	if err != nil {
+		logging.Error(err)
+	}
 
-	return token, err
+	return token
 }
 
 func ParseToken(token string) (*Claims, error) {
@@ -45,4 +59,12 @@ func ParseToken(token string) (*Claims, error) {
 	}
 
 	return nil, err
+}
+
+func RefreshToken(token string) (string) {
+	claims, _ := ParseToken(token)
+
+	// 从redis读取已刷新的token, 若不存在, 生成新的
+
+	return GenerateToken(claims.User, claims.Permission)
 }
