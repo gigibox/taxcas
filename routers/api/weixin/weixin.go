@@ -16,8 +16,8 @@ import (
 	"strings"
 	"taxcas/models"
 	"taxcas/pkg/app"
-	"taxcas/pkg/config"
 	"taxcas/pkg/e"
+	"taxcas/pkg/setting"
 	"taxcas/service/weixin_service"
 	//	"errors"
 )
@@ -39,8 +39,8 @@ func WXGetOpenID(c *gin.Context) {
 	code := c.Param("code")
 
 	url := strings.Join([]string{"https://api.weixin.qq.com/sns/oauth2/access_token",
-		"?appid=", config.AppID,
-		"&secret=", config.AppSecret,
+		"?appid=", setting.WeixinSetting.AppID,
+		"&secret=", setting.WeixinSetting.AppSecret,
 		"&code=", code,
 		"&grant_type=authorization_code"}, "")
 
@@ -104,7 +104,7 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	fmt.Println(ip)
 	//	fmt.Println(result)
 
-	client := wxpay.NewClient(wxpay.NewAccount(config.AppID, config.MchID, config.ApiKey, false))
+	client := wxpay.NewClient(wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeixinSetting.MchID, setting.WeixinSetting.ApiKey, false))
 	params := make(wxpay.Params)
 	//	params.SetString("body", result.CertName).
 	params.SetString("body", "坤腾-证书").
@@ -112,7 +112,7 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 		//	SetInt64("total_fee", int64(price)).
 		SetInt64("total_fee", 1).
 		SetString("spbill_create_ip", ip).
-		SetString("notify_url", config.Notify_url).
+		SetString("notify_url", setting.WeixinSetting.Notify_url).
 		SetString("openid", openid).
 		SetString("trade_type", "JSAPI")
 
@@ -127,7 +127,7 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 		"prepay_id": prepay_id,
 		"appid":     appid,
 		"price":     "1",
-		"apikey":    config.ApiKey,
+		"apikey":    setting.WeixinSetting.ApiKey,
 		"orderid":   out_trade_no,
 		"name":      "test",
 	})
@@ -195,7 +195,7 @@ func WXPayRefund(c *gin.Context) {
 	out_refund_no := UniqueId()
 	//通过订单号去支付成功的数据库表中查找是否有此订单，并取出相应的total_fee,设置refund_fee
 
-	account := wxpay.NewAccount(config.AppID, config.MchID, config.ApiKey, false)
+	account := wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeinxinSetting.MchID, setting.WeixinSetting.ApiKey, false)
 	//	account.SetCertData(Weixin_cert)
 
 	client := wxpay.NewClient(account)
@@ -221,7 +221,7 @@ func WXPayRefund(c *gin.Context) {
 func WXPayRefundQuery(c *gin.Context) {
 	out_refund_no := c.Param("out_refund_no")
 
-	client := wxpay.NewClient(wxpay.NewAccount(config.AppID, config.MchID, config.ApiKey, false))
+	client := wxpay.NewClient(wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeixinSetting.MchID, setting.WeixinSetting.ApiKey, false))
 	params := make(wxpay.Params)
 	params.SetString("out_refund_no", out_refund_no)
 
@@ -234,7 +234,7 @@ func WXPayRefundQuery(c *gin.Context) {
 }
 
 func wxpayVerifySign(needVerifyM map[string]interface{}, sign string) bool {
-	signCalc := wxpayCalcSign(needVerifyM, config.ApiKey)
+	signCalc := wxpayCalcSign(needVerifyM, setting.WeixinSetting.ApiKey)
 
 	//	slog.Debug("计算出来的sign: %v", signCalc)
 	//	slog.Debug("微信异步通知sign: %v", sign)
