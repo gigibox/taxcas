@@ -14,7 +14,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"taxcas/models"
+//	"taxcas/models"
 	"taxcas/pkg/app"
 	"taxcas/pkg/config"
 	"taxcas/pkg/e"
@@ -85,9 +85,10 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	appG := app.Gin{c}
 	ip := c.ClientIP()
 	openid := c.Param("openid")
+/*
 	certid := c.Param("certid")
 	result := models.C_certs{}
-	isExist, err := models.MgoFindOne("CertID", certid, "certs", &result)
+	isExist, err := models.MgoFindOne("certid", certid, "certs", &result)
 	if err != nil {
 		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT_FAIL, nil)
 	}
@@ -96,19 +97,25 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	}
 
 	price := result.Price
+	fmt.Println(price)
+*/
 	out_trade_no := UniqueId()
 	fmt.Println(ip)
+//	fmt.Println(result)
 
 	client := wxpay.NewClient(wxpay.NewAccount(config.AppID, config.MchID, config.ApiKey, false))
 	params := make(wxpay.Params)
-	params.SetString("body", result.CertName).
+//	params.SetString("body", result.CertName).
+	params.SetString("body", "坤腾-证书").
 		SetString("out_trade_no", out_trade_no).
-		SetInt64("total_fee", int64(price)).
+	//	SetInt64("total_fee", int64(price)).
+		SetInt64("total_fee", 1).
 		SetString("spbill_create_ip", ip).
 		SetString("notify_url", config.Notify_url).
 		SetString("openid", openid).
 		SetString("trade_type", "JSAPI")
 
+	
 	p, err := client.UnifiedOrder(params)
 	if err != nil {
 		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, nil)
@@ -119,30 +126,34 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
 		"prepay_id": prepay_id,
 		"appid":     appid,
+		"price":  "1",
+		"apikey":  config.ApiKey,
+		"orderid": out_trade_no,
+		"name": "test",
 	})
 	//c.JSON(http.StatusOK, gin.H{"prepay_id": prepay_id, "appid": appid})
 }
 
 type WXPayNotifyReq struct {
-	Return_code    string `xml:"return_code"`
-	Return_msg     string `xml:"return_msg"`
-	Appid          string `xml:"appid"`
-	Mch_id         string `xml:"mch_id"`
-	Nonce          string `xml:"nonce_str"`
-	Sign           string `xml:"sign"`
-	Result_code    string `xml:"result_code"`
-	Openid         string `xml:openid`
-	Is_subscribe   string `xml:"is_subscribe"`
-	Trade_type     string `xml:"trade_type"`
-	Bank_type      string `xml:"bank_type"`
-	Total_fee      string `xml:"total_fee"`
-	Fee_type       string `xml:"fee_type"`
-	Cash_fee       int    `xml:"cash_fee"`
-	Cash_fee_Type  int    `xml:"cash_fee_type"`
-	Transaction_id string `xml:"transaction_id"`
-	Out_trade_no   string `xml:"out_trade_no"`
-	Attach         string `xml:"attach"`
-	Time_end       string `xml:"time_end"`
+	Return_code            string `xml:"return_code"`
+	Return_msg             string `xml:"return_msg"`
+	Appid                  string `xml:"appid"`
+	Mch_id                 string `xml:"mch_id"`
+	Nonce                  string `xml:"nonce_str"`
+	Sign                   string `xml:"sign"`
+	Result_code            string `xml:"result_code"`
+	Openid                 string `xml:"openid"`
+	Is_subscribe           string `xml:"is_subscribe"`
+	Trade_type             string `xml:"trade_type"`
+	Bank_type              string `xml:"bank_type"`
+	Total_fee              string `xml:"total_fee"`
+	Fee_type               string `xml:"fee_type"`
+	Cash_fee               int    `xml:"cash_fee"`
+	Cash_fee_type          string `xml:"cash_fee_type"`
+	Transaction_id         string `xml:"transaction_id"`
+	Out_trade_no           string `xml:"out_trade_no"`
+	Attach		       string `xml:"attach"`
+	Time_end               string `xml:"time_end"`
 }
 
 type WXPayNotifyResp struct {
@@ -151,8 +162,6 @@ type WXPayNotifyResp struct {
 }
 
 func WXPayCallback(c *gin.Context) {
-	//	appG := app.Gin{c}
-	//	appG.Response(http.StatusOK, true, e.SUCCESS, "SUCCESS")
 	var mr WXPayNotifyReq
 	var ms WXPayNotifyResp
 	err := c.Bind(&mr)
@@ -179,7 +188,7 @@ func WXPayCallback(c *gin.Context) {
 	reqMap["total_fee"] = mr.Total_fee
 	reqMap["fee_type"] = mr.Fee_type
 	reqMap["cash_fee"] = mr.Cash_fee
-	reqMap["cash_fee_type"] = mr.Cash_fee_Type
+	reqMap["cash_fee_type"] = mr.Cash_fee_type
 	reqMap["transaction_id"] = mr.Transaction_id
 	reqMap["out_trade_no"] = mr.Out_trade_no
 	reqMap["attach"] = mr.Attach
@@ -246,7 +255,7 @@ func WXPayRefundQuery(c *gin.Context) {
 }
 
 func wxpayVerifySign(needVerifyM map[string]interface{}, sign string) bool {
-	signCalc := wxpayCalcSign(needVerifyM, "API_KEY")
+	signCalc := wxpayCalcSign(needVerifyM, config.ApiKey)
 
 	//	slog.Debug("计算出来的sign: %v", signCalc)
 	//	slog.Debug("微信异步通知sign: %v", sign)
