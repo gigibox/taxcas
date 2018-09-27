@@ -14,10 +14,11 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-//	"taxcas/models"
+	//	"taxcas/models"
 	"taxcas/pkg/app"
 	"taxcas/pkg/config"
 	"taxcas/pkg/e"
+	"taxcas/service/weixin_service"
 	//	"errors"
 )
 
@@ -85,37 +86,36 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	appG := app.Gin{c}
 	ip := c.ClientIP()
 	openid := c.Param("openid")
-/*
-	certid := c.Param("certid")
-	result := models.C_certs{}
-	isExist, err := models.MgoFindOne("certid", certid, "certs", &result)
-	if err != nil {
-		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT_FAIL, nil)
-	}
-	if isExist == false {
-		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
-	}
+	/*
+		certid := c.Param("certid")
+		result := models.C_certs{}
+		isExist, err := models.MgoFindOne("certid", certid, "certs", &result)
+		if err != nil {
+			appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT_FAIL, nil)
+		}
+		if isExist == false {
+			appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
+		}
 
-	price := result.Price
-	fmt.Println(price)
-*/
+		price := result.Price
+		fmt.Println(price)
+	*/
 	out_trade_no := UniqueId()
 	fmt.Println(ip)
-//	fmt.Println(result)
+	//	fmt.Println(result)
 
 	client := wxpay.NewClient(wxpay.NewAccount(config.AppID, config.MchID, config.ApiKey, false))
 	params := make(wxpay.Params)
-//	params.SetString("body", result.CertName).
+	//	params.SetString("body", result.CertName).
 	params.SetString("body", "坤腾-证书").
 		SetString("out_trade_no", out_trade_no).
-	//	SetInt64("total_fee", int64(price)).
+		//	SetInt64("total_fee", int64(price)).
 		SetInt64("total_fee", 1).
 		SetString("spbill_create_ip", ip).
 		SetString("notify_url", config.Notify_url).
 		SetString("openid", openid).
 		SetString("trade_type", "JSAPI")
 
-	
 	p, err := client.UnifiedOrder(params)
 	if err != nil {
 		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, nil)
@@ -126,44 +126,17 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
 		"prepay_id": prepay_id,
 		"appid":     appid,
-		"price":  "1",
-		"apikey":  config.ApiKey,
-		"orderid": out_trade_no,
-		"name": "test",
+		"price":     "1",
+		"apikey":    config.ApiKey,
+		"orderid":   out_trade_no,
+		"name":      "test",
 	})
 	//c.JSON(http.StatusOK, gin.H{"prepay_id": prepay_id, "appid": appid})
 }
 
-type WXPayNotifyReq struct {
-	Return_code            string `xml:"return_code"`
-	Return_msg             string `xml:"return_msg"`
-	Appid                  string `xml:"appid"`
-	Mch_id                 string `xml:"mch_id"`
-	Nonce                  string `xml:"nonce_str"`
-	Sign                   string `xml:"sign"`
-	Result_code            string `xml:"result_code"`
-	Openid                 string `xml:"openid"`
-	Is_subscribe           string `xml:"is_subscribe"`
-	Trade_type             string `xml:"trade_type"`
-	Bank_type              string `xml:"bank_type"`
-	Total_fee              string `xml:"total_fee"`
-	Fee_type               string `xml:"fee_type"`
-	Cash_fee               int    `xml:"cash_fee"`
-	Cash_fee_type          string `xml:"cash_fee_type"`
-	Transaction_id         string `xml:"transaction_id"`
-	Out_trade_no           string `xml:"out_trade_no"`
-	Attach		       string `xml:"attach"`
-	Time_end               string `xml:"time_end"`
-}
-
-type WXPayNotifyResp struct {
-	Return_code string `xml:"return_code"`
-	Return_msg  string `xml:"return_msg"`
-}
-
 func WXPayCallback(c *gin.Context) {
-	var mr WXPayNotifyReq
-	var ms WXPayNotifyResp
+	var mr models.WXPayNotifyReq
+	var ms models.WXPayNotifyResp
 	err := c.Bind(&mr)
 	if err != nil {
 		ms.Return_code = "FAIL"
@@ -196,8 +169,14 @@ func WXPayCallback(c *gin.Context) {
 
 	if wxpayVerifySign(reqMap, mr.Sign) {
 		//这里就可以更新我们的后台数据库了，其他业务逻辑同理。
-		ms.Return_code = "SUCCESS"
-		ms.Return_msg = "OK"
+		result, err := weixin_service.Add(mr, weixin_service.Col_order)
+		if err != nil {
+			fmt.Println("写数据库失败")
+		}
+		if result {
+			ms.Return_code = "SUCCESS"
+			ms.Return_msg = "OK"
+		}
 	} else {
 		ms.Return_code = "FAIL"
 		ms.Return_msg = "failed to verify sign, please retry!"
