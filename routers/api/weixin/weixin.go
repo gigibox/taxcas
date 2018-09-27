@@ -192,6 +192,7 @@ func WXPayCallback(c *gin.Context) {
 // @Success 200 {string} json "{"msg":string, "extra":}"
 // @Router  /api/v1/weixin/wxrefund/{out_trade_no} [get]
 func WXPayRefund(c *gin.Context) {
+	appG := app.Gin{c}
 	out_trade_no := c.Param("out_trade_no")
 	out_refund_no := UniqueId()
 	//通过订单号去支付成功的数据库表中查找是否有此订单，并取出相应的total_fee,设置refund_fee
@@ -208,10 +209,10 @@ func WXPayRefund(c *gin.Context) {
 
 	p, err := client.Refund(params)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"msg": "UnifyOder failed"})
+		appG.Response(http.StatusOK, false, e.SUCCESS, err)
 	}
 	//更新退款成功的数据库表，记录退款成功状态
-	c.JSON(http.StatusOK, gin.H{"msg": "SUCCESS", "extra": p})
+	appG.Response(http.StatusOK, true, e.SUCCESS, p)
 }
 
 // @Summary 查询退款
@@ -220,6 +221,7 @@ func WXPayRefund(c *gin.Context) {
 // @Success 200 {string} json "{"msg":string, "extra":}"
 // @Router  /api/v1/weixin/wxquery/{out_trade_no} [get]
 func WXPayRefundQuery(c *gin.Context) {
+	appG := app.Gin{c}
 	out_refund_no := c.Param("out_refund_no")
 
 	client := wxpay.NewClient(wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeixinSetting.MchID, setting.WeixinSetting.ApiKey, false))
@@ -228,10 +230,10 @@ func WXPayRefundQuery(c *gin.Context) {
 
 	p, err := client.RefundQuery(params)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"msg": "UnifyOder failed"})
+		appG.Response(http.StatusOK, false, e.SUCCESS, err)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"msg": "SUCCESS", "extra": p})
+	appG.Response(http.StatusOK, true, e.SUCCESS, p)
 }
 
 func wxpayVerifySign(needVerifyM map[string]interface{}, sign string) bool {
