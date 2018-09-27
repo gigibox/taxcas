@@ -195,7 +195,7 @@ func WXPayRefund(c *gin.Context) {
 	out_refund_no := UniqueId()
 	//通过订单号去支付成功的数据库表中查找是否有此订单，并取出相应的total_fee,设置refund_fee
 
-	account := wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeinxinSetting.MchID, setting.WeixinSetting.ApiKey, false)
+	account := wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeixinSetting.MchID, setting.WeixinSetting.ApiKey, false)
 	//	account.SetCertData(Weixin_cert)
 
 	client := wxpay.NewClient(account)
