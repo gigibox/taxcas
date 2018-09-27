@@ -41,6 +41,7 @@ var MsgFlags = map[int]string{
 	ERROR_ADD_APPLY:				 "提交申请失败",
 	ERROR_GET_USER_CERT_IMAGES:		 "未查询到该用户的电子证书",
 	ERROR_GET_USER_CERT_FILES:		 "未查询到该用户的电子证书",
+	ERROR_AUTH_CHANGE_PASSWORD_FAIL: "修改密码时发生错误",
 }
 
 func GetMsg(code int) string {

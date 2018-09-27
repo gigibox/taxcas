@@ -28,7 +28,7 @@ func ApplyForCert(c *gin.Context) {
 	err = c.BindJSON(&commit)
 	if err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, "BindJson")
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, "BindJson")
 		return
 	}
 
@@ -37,7 +37,7 @@ func ApplyForCert(c *gin.Context) {
 	ok, _ := valid.Valid(&commit)
 	if !ok {
 		app.MarkErrors(valid.Errors)
-		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, "valid error")
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, "valid error")
 		return
 	}
 
@@ -60,7 +60,7 @@ func ApplyForCert(c *gin.Context) {
 	isOpen, err := applyService.CheckApplyStatus()
 	if err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT_FAIL, err)
+		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_EXIST_CERT_FAIL, err)
 		return
 	}
 
@@ -72,13 +72,13 @@ func ApplyForCert(c *gin.Context) {
 
 	// 生成编号
 	if !applyService.UpdateSerialNumber() {
-		appG.Response(http.StatusOK, false, e.ERROR, "生成证书编号错误")
+		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR, "生成证书编号错误")
 		return
 	}
 
 	if isApplied, err := applyService.CheckApplyExist(); !isApplied {
 		logging.Warn(err)
-		appG.Response(http.StatusOK, false, e.ERROR_EXIST_APPLY, err)
+		appG.Response(http.StatusConflict, false, e.ERROR_EXIST_APPLY, err)
 		return
 	}
 
@@ -86,13 +86,13 @@ func ApplyForCert(c *gin.Context) {
 	isAdded, err := applyService.Add()
 	if err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusOK, false, e.ERROR_ADD_APPLY, err)
+		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_ADD_APPLY, err)
 		return
 	}
 
 	// 更新用户信息
 	user_service.UpdateCerts(commit.User, applyService.Data.CertID, applyService.Data.ApplyStatus)
-	appG.Response(http.StatusOK, isAdded, e.SUCCESS, err)
+	appG.Response(http.StatusCreated, isAdded, e.SUCCESS, err)
 }
 
 // @Summary 查询用户

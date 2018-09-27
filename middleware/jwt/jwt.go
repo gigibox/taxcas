@@ -14,6 +14,7 @@ import (
 func JWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		code := e.SUCCESS
+		httpCode := http.StatusUnauthorized
 		nowTime := time.Now().Unix()
 
 		authString := c.GetHeader("Authorization")
@@ -27,8 +28,10 @@ func JWT() gin.HandlerFunc {
 				code = e.ERROR_AUTH
 			} else if !strings.Contains(c.Request.RequestURI, claims.Permission) {
 				code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
+				httpCode = http.StatusForbidden
 			} else if nowTime > claims.ExpiresAt {
 				code = e.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
+				httpCode = http.StatusForbidden
 			} else if nowTime > claims.RefeshTime {
 				c.Header("Authorization", util.RefreshToken(token))
 			} else {
@@ -37,7 +40,7 @@ func JWT() gin.HandlerFunc {
 		}
 
 		if code != e.SUCCESS {
-			c.JSON(http.StatusUnauthorized, gin.H{
+			c.JSON(httpCode, gin.H{
 				"success": false,
 				"msg":  e.GetMsg(code),
 				"data": nil,

@@ -8,7 +8,7 @@
         "version": "1.0"
     },
     "paths": {
-        "/api/auth": {
+        "/api/admin/login": {
             "get": {
                 "tags": [
                     "认证授权"
@@ -25,6 +25,39 @@
                     {
                         "type": "string",
                         "description": "The password for login",
+                        "name": "password",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "data\":{\"token\":string}",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/app.ResponseMsg"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/password": {
+            "put": {
+                "tags": [
+                    "后台管理"
+                ],
+                "summary": "修改密码",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The username",
+                        "name": "username",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The password",
                         "name": "password",
                         "in": "query",
                         "required": true

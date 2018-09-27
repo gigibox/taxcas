@@ -17,7 +17,6 @@ import (
 	"taxcas/pkg/export"
 	"taxcas/pkg/setting"
 	"taxcas/pkg/upload"
-	"taxcas/routers/api"
 )
 
 func InitRouter() *gin.Engine {
@@ -36,7 +35,7 @@ func InitRouter() *gin.Engine {
 		public.StaticFS("/export", http.Dir(export.GetExportFullPath()))
 		public.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
 
-		public.GET("/auth", api.GetAuth)
+		public.GET("/admin/login", admin.Login)
 
 		if setting.ServerSetting.RunMode == "debug" {
 			public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -75,6 +74,9 @@ func InitRouter() *gin.Engine {
 
 		// 导出申请状态
 		apiv1.GET("/admin/files/applicants/certs/:certid", admin.ExportApplicants)
+
+		// 修改密码
+		apiv1.PUT("/admin/password", admin.ChangePassword)
 	}
 
 	// 用户端接口

@@ -80,7 +80,7 @@ func AddCert(c *gin.Context) {
 	}
 
 	if err != nil {
-		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, err)
 		return
 	}
 
@@ -88,14 +88,14 @@ func AddCert(c *gin.Context) {
 
 	if ok, _ := valid.Valid(&cert); !ok {
 		app.MarkErrors(valid.Errors)
-		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, "valid Errors")
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, "valid Errors")
 		return
 	}
 
 	certService := cert_service.S_cert{Collection: "certs", Data: cert}
 
 	if isExist, _ := certService.CheckExist(); !isExist {
-		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT, nil)
+		appG.Response(http.StatusConflict, false, e.ERROR_EXIST_CERT, nil)
 		return
 	}
 
@@ -106,7 +106,7 @@ func AddCert(c *gin.Context) {
 
 	isAdded, err := certService.Add()
 
-	appG.Response(http.StatusOK, isAdded, e.SUCCESS, err)
+	appG.Response(http.StatusCreated, isAdded, e.SUCCESS, err)
 }
 
 // @Summary 预览证书
@@ -122,7 +122,7 @@ func PreviewImage(c *gin.Context) {
 	var design models.ImageDesigner
 
 	if err := c.Bind(&design); err != nil {
-		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, err)
 		return
 	}
 
@@ -131,7 +131,7 @@ func PreviewImage(c *gin.Context) {
 
 	image, err := cert_service.GetCertImage(&t, "", "")
 	if err != nil {
-		appG.Response(http.StatusOK, true, e.ERROR_UPLOAD_CREATE_IMAGE_FAIL, nil)
+		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_UPLOAD_CREATE_IMAGE_FAIL, nil)
 
 		return
 	}
@@ -151,7 +151,7 @@ func PreviewImage(c *gin.Context) {
 func GetFonts(c *gin.Context) {
 	appG := app.Gin{C: c}
 
-	appG.Response(http.StatusOK, true, e.SUCCESS, models.GetFontsList())
+	appG.Response(http.StatusBadRequest, true, e.SUCCESS, util.GetFontsList())
 }
 
 // @Summary  上传证书模板
@@ -166,12 +166,12 @@ func UploadImage(c *gin.Context) {
 
 	file, image, err := c.Request.FormFile("image")
 	if err != nil {
-		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, err)
 		return
 	}
 
 	if image == nil {
-		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, nil)
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, nil)
 		return
 	}
 
@@ -179,13 +179,13 @@ func UploadImage(c *gin.Context) {
 	fullPath  := upload.GetImageFullPath()
 
 	if !upload.CheckImageExt(imageName) || !upload.CheckFileSize(file) {
-		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_CHECK_IMAGE_FORMAT, nil)
+		appG.Response(http.StatusRequestEntityTooLarge, false, e.ERROR_UPLOAD_CHECK_IMAGE_FORMAT, nil)
 		return
 	}
 
 	if err := c.SaveUploadedFile(image, fullPath + imageName); err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_SAVE_IMAGE_FAIL, err)
+		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_UPLOAD_SAVE_IMAGE_FAIL, err)
 		return
 	}
 
@@ -206,12 +206,12 @@ func UploadExcel(c *gin.Context) {
 
 	file, excel, err := c.Request.FormFile("excel")
 	if err != nil {
-		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, err)
 		return
 	}
 
 	if excel == nil {
-		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, nil)
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, nil)
 		return
 	}
 
@@ -219,13 +219,13 @@ func UploadExcel(c *gin.Context) {
 	fullPath := upload.GetExcelFullPath()
 
 	if !upload.CheckExcelExt(saveName) || !upload.CheckFileSize(file) {
-		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_CHECK_FILE_FORMAT, nil)
+		appG.Response(http.StatusRequestEntityTooLarge, false, e.ERROR_UPLOAD_CHECK_FILE_FORMAT, nil)
 		return
 	}
 
 	if err := c.SaveUploadedFile(excel, fullPath + saveName); err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_SAVE_FILE_FAIL, err)
+		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_UPLOAD_SAVE_FILE_FAIL, err)
 		return
 	}
 
@@ -254,7 +254,7 @@ func ExportApplicants(c *gin.Context) {
 
 	filename, _ := apply_service.ExportFile(certid, c.Query("type"))
 	if filename == "" {
-		appG.Response(http.StatusOK, false, e.ERROR_EXPORT_FILE_FAIL, nil)
+		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_EXPORT_FILE_FAIL, nil)
 		return
 	}
 
@@ -282,7 +282,7 @@ func UpdateApplicants(c *gin.Context) {
 	params := parameters{}
 	err := c.BindJSON(&params)
 	if err != nil {
-		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, err)
 		return
 	}
 
@@ -319,7 +319,7 @@ func UserCertificates(c *gin.Context) {
 
 	image, err := cert_service.GetCertImage(nil, certid, wechatid)
 	if image == "" {
-		appG.Response(http.StatusOK, false, e.ERROR_GET_USER_CERT_IMAGES, err)
+		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_GET_USER_CERT_IMAGES, err)
 		return
 	}
 

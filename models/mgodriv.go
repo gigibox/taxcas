@@ -1,11 +1,11 @@
 package models
 
 import (
-	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"log"
 	"taxcas/pkg/setting"
+	"taxcas/pkg/util"
 )
 
 var session *mgo.Session
@@ -13,13 +13,38 @@ var session *mgo.Session
 func init() {
 	var err error
 
-	session, err = mgo.Dial(fmt.Sprintf("mongodb://%s", setting.DatabaseSetting.Host))
+	session, err = mgo.Dial("mongodb://" + setting.DatabaseSetting.Host)
 	//defer session.Close()
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 	}
 
 	session.SetMode(mgo.Monotonic, true)
+}
+
+func Setup() {
+	var err error
+
+	// 新建数据库, 初始化管理员
+	names, err := session.DatabaseNames()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i := range names {
+		if names[i] == setting.DatabaseSetting.Name {
+			return
+		}
+	}
+
+	administrator := C_admin{
+		"admin",
+		util.EncodeMD5("admin"),
+	}
+
+	if _, err := MgoInsert(administrator, "admin"); err != nil {
+		log.Fatal("Mgodriv Setup() error: ", err)
+	}
 }
 
 func MgoInsert(doc interface{}, col string) (bool, error) {
@@ -27,8 +52,7 @@ func MgoInsert(doc interface{}, col string) (bool, error) {
 
 	err := c.Insert(doc)
 	if err != nil {
-		log.Println(err)
-		return false, nil
+		return false, err
 	}
 
 	return true, nil

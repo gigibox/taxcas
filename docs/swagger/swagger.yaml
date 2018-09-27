@@ -112,7 +112,7 @@ info:
   title: TAXCAS Example API
   version: "1.0"
 paths:
-  /api/auth:
+  /api/admin/login:
     get:
       parameters:
       - description: The username for login
@@ -134,6 +134,28 @@ paths:
       summary: 用户登陆
       tags:
       - 认证授权
+  /api/admin/password:
+    put:
+      parameters:
+      - description: The username
+        in: query
+        name: username
+        required: true
+        type: string
+      - description: The password
+        in: query
+        name: password
+        required: true
+        type: string
+      responses:
+        "200":
+          description: data":{"token":string}
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      summary: 修改密码
+      tags:
+      - 后台管理
   /api/v1/admin/applicants/certs/{certid}:
     get:
       description: 查询指定证书的申领信息

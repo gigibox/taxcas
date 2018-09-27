@@ -4,11 +4,13 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
 	"strings"
 	"taxcas/pkg/file"
+	"taxcas/pkg/logging"
 	"taxcas/pkg/setting"
 )
 
@@ -57,4 +59,20 @@ func EncodeMD5(value string) string {
 	m.Write([]byte(value))
 
 	return hex.EncodeToString(m.Sum(nil))
+}
+
+func GetFontsList() []string {
+	var fonts []string
+
+	list, err := ioutil.ReadDir(setting.AppSetting.RuntimeRootPath + setting.AppSetting.FontSavePath)
+	if err != nil {
+		logging.Error(err)
+		return fonts
+	}
+
+	for _, v := range list {
+		fonts = append(fonts, v.Name())
+	}
+
+	return fonts
 }
