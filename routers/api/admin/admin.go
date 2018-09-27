@@ -336,7 +336,7 @@ func UserCertificates(c *gin.Context) {
 // @Param   certid path string true "证书id"
 // @Param   wechatid path string true "用户微信id"
 // @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
-// @Router  /api/v1/weixin/images/certs/{certid}/{wechatid} [get]
+// @Router  /api/v1/weixin/images/certs/{certid}/{openid} [get]
 func ___c() {
 
 }
