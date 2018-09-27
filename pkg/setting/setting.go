@@ -12,8 +12,8 @@ type App struct {
 	PageSize  int
 	PrefixUrl string
 
-	RuntimeRootPath string
-	UploadAllowMaxSize   int
+	RuntimeRootPath    string
+	UploadAllowMaxSize int
 
 	ImageAllowExts []string
 	ExcelAllowExts []string
@@ -21,13 +21,14 @@ type App struct {
 	UploadSavePath string
 	ExportSavePath string
 	QrCodeSavePath string
-	FontSavePath string
+	FontSavePath   string
 
 	LogSavePath string
 	LogSaveName string
 	LogFileExt  string
 	TimeFormat  string
 }
+
 var AppSetting = &App{}
 
 type Server struct {
@@ -36,6 +37,7 @@ type Server struct {
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
 }
+
 var ServerSetting = &Server{}
 
 type Database struct {
@@ -46,6 +48,7 @@ type Database struct {
 	Name        string
 	TablePrefix string
 }
+
 var DatabaseSetting = &Database{}
 
 type Redis struct {
@@ -55,6 +58,7 @@ type Redis struct {
 	MaxActive   int
 	IdleTimeout time.Duration
 }
+
 var RedisSetting = &Redis{}
 
 type Weixin struct {
@@ -63,7 +67,9 @@ type Weixin struct {
 	MchID      string
 	ApiKey     string
 	Notify_url string
+	ApiCert    string
 }
+
 var WeixinSetting = &Weixin{}
 
 var cfg *ini.File

@@ -18,6 +18,7 @@ import (
 	"taxcas/pkg/app"
 	"taxcas/pkg/e"
 	"taxcas/pkg/setting"
+	"taxcas/pkg/upload"
 	"taxcas/service/weixin_service"
 	//	"errors"
 )
@@ -196,7 +197,7 @@ func WXPayRefund(c *gin.Context) {
 	//通过订单号去支付成功的数据库表中查找是否有此订单，并取出相应的total_fee,设置refund_fee
 
 	account := wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeixinSetting.MchID, setting.WeixinSetting.ApiKey, false)
-	//	account.SetCertData(Weixin_cert)
+	account.SetCertData(upload.GetApiCertFullPath())
 
 	client := wxpay.NewClient(account)
 	params := make(wxpay.Params)
