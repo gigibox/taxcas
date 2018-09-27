@@ -104,6 +104,7 @@ type C_Apply struct {
 	PayStatus      int    `json:"pay_status"`    // 支付状态
 	SerialNumber   string `json:"serial_number"` // 证书编号
 	ImageSaveUrl   string `json:"image_save_url"`
+	PDFSaveUrl     string `json:"pdf_save_url"`
 	ApplyStatus    int    `json:"apply_status"`     // 申请状态
 	ApplyStatusMsg string `json:"apply_status_msg"` //申请状态信息
 	ApplyDate      int    `json:"apply_date"`       // 申请时间

@@ -76,7 +76,15 @@ func ApplyForCert(c *gin.Context) {
 		return
 	}
 
-	if isApplied, err := applyService.CheckApplyExist(); !isApplied {
+	// 同一微信号只能申请一次
+	if isApplied, err := applyService.CheckApplyExistByWX(); !isApplied {
+		logging.Warn(err)
+		appG.Response(http.StatusConflict, false, e.ERROR_EXIST_APPLY, err)
+		return
+	}
+
+	// 同一个身份证只能申请一次
+	if isApplied, err := applyService.CheckApplyExistByID(); !isApplied {
 		logging.Warn(err)
 		appG.Response(http.StatusConflict, false, e.ERROR_EXIST_APPLY, err)
 		return

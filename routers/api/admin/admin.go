@@ -23,9 +23,6 @@ import (
 // @Produce  	json
 // @Success 	200 {object} app.ResponseMsg "data:[{"cert_id":"0", "cert_name":"证书1", "status":"enable"}]"
 // @Router 		/api/v1/admin/certs [get]
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name Authorization
 func GetCertList(c *gin.Context) {
 	appG := app.Gin{c}
 	appG.Response(http.StatusOK, true, e.SUCCESS, cert_service.GetAllCertName())
@@ -129,7 +126,7 @@ func PreviewImage(c *gin.Context) {
 	t := models.GlobalDesigner
 	t.ImgName = design.ImgName
 
-	image, err := cert_service.GetCertImage(&t, "", "")
+	image, err := cert_service.GetCertImage(&t, nil)
 	if err != nil {
 		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_UPLOAD_CREATE_IMAGE_FAIL, nil)
 
@@ -267,13 +264,13 @@ func ExportApplicants(c *gin.Context) {
 type parameters struct {
 	FilePath	string `json:"file_path"`
 	Action		string `json:"action"`
-	Wechatid	[]string `json:"wechatid"`
+	Pids	[]string `json:"pids"`
 }
 // @Summary  执行审核结果
 // @Tags 	 后台管理
 // @Security ApiKeyAuth
 // @Produce  json
-// @Param    data body admin.parameters true "file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝), wechatid: 选中的记录"
+// @Param    data body admin.parameters true "file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝), pids[]: 选中的记录"
 // @Success  200 {object} app.ResponseMsg "data:{""}"
 // @Router   /api/v1/admin/applicants/certs/{certid} [put]
 func UpdateApplicants(c *gin.Context) {
@@ -295,7 +292,7 @@ func UpdateApplicants(c *gin.Context) {
 	}
 
 	// 解析审核结果
-	s, f := apply_service.UpdateApplicants(certid, params.Action, params.FilePath, params.Wechatid)
+	s, f := apply_service.UpdateApplicants(certid, params.Action, params.FilePath, params.Pids)
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]int{
 		"success" : s,
@@ -305,38 +302,109 @@ func UpdateApplicants(c *gin.Context) {
 
 // @Summary 查看用户证书
 // @Tags 	后台管理
-// @Security ApiKeyAuth
-// @Produce json
 // @Param   certid path string true "证书id"
-// @Param   wechatid path string true "用户微信id"
+// @Param   pid path string true "身份证号"
 // @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
-// @Router  /api/v1/admin/images/certs/{certid}/{wechatid} [get]
+// @Router  /api/v1/admin/images/certs/{certid}/{pid} [get]
 func UserCertificates(c *gin.Context) {
 	appG := app.Gin{c}
 
 	certid := c.Param("certid")
-	wechatid := c.Param("wechatid")
+	pid := c.Param("pid")
+	openid := c.Param("openid")
 
-	image, err := cert_service.GetCertImage(nil, certid, wechatid)
+	apply := models.C_Apply{}
+	if pid != "" {
+		apply_service.GetApplyByPID(certid, pid, &apply)
+	} else if openid != "" {
+		apply_service.GetApplyByOpenid(certid, pid, &apply)
+	} else {
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, nil)
+		return
+	}
+
+	if apply.SerialNumber == "" || apply.ApplyStatus != models.Passed {
+		appG.Response(http.StatusOK, false, e.ERROR_GET_USER_CERT_IMAGES, nil)
+		return
+	}
+
+	image, err := cert_service.GetCertImage(nil, &apply)
 	if image == "" {
 		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_GET_USER_CERT_IMAGES, err)
 		return
 	}
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
-		"imageURL":      util.GetAppFullUrl(image),
-		"imageSavePath": image,
+		"image_url":       util.GetAppFullUrl(image),
+		"image_save_path": image,
+	})
+}
+
+// @Summary 查询用户证书
+// @Tags 	官网
+// @Param   certid path string true "证书id"
+// @Param   id path string true "证书编号或身份证号"
+// @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
+// @Router  /api/e-certs/{certid}/{id} [get]
+func OfficialWebsite(c *gin.Context) {
+	appG := app.Gin{c}
+
+	certid := c.Param("certid")
+	id := c.Param("id")
+
+	apply := models.C_Apply{}
+	if len(id) == 18 {
+		apply_service.GetApplyByPID(certid, id, &apply)
+	} else if len(id) == 12 {
+		apply_service.GetApplyBySN(certid, id, &apply)
+	} else {
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, nil)
+		return
+	}
+
+	//if apply.SerialNumber == "" || apply.ApplyStatus != models.Passed {
+	if apply.SerialNumber == "" {
+		appG.Response(http.StatusOK, false, e.ERROR_GET_USER_CERT_IMAGES, nil)
+		return
+	}
+
+	image, err := cert_service.GetCertImage(nil, &apply)
+	if image == "" {
+		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_GET_USER_CERT_IMAGES, err)
+		return
+	}
+
+	pdf, err := cert_service.GetCertFile(&apply)
+	if pdf == "" {
+		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_GET_USER_CERT_FILES, err)
+		return
+	}
+
+	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
+		"cert_name":     apply.CertName,
+		"cert_sn":       apply.SerialNumber,
+		"user_name":     apply.Name,
+		"user_id":       apply.PersonalID,
+		"pdf_url":       util.GetAppFullUrl(pdf),
+		"image_url":     util.GetAppFullUrl(image),
+		"pdf_save_path": pdf,
+		"image_save_path": image,
 	})
 }
 
 // @Summary 查看用户证书
 // @Tags 	微信公众号
-// @Security ApiKeyAuth
-// @Produce json
 // @Param   certid path string true "证书id"
-// @Param   wechatid path string true "用户微信id"
+// @Param   openid path string true "用户微信id"
 // @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
-// @Router  /api/v1/weixin/images/certs/{certid}/{openid} [get]
-func ___c() {
+// @Router  /api/v1/weixin/e-certs/certs/{certid}/{openid} [get]
+func _____(c *gin.Context) {
+}
+
+// @Summary 查询证书列表
+// @Tags 	官网
+// @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
+// @Router  /api/e-certs [get]
+func ___0() {
 
 }

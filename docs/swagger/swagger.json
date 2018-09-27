@@ -74,6 +74,56 @@
                 }
             }
         },
+        "/api/e-certs": {
+            "get": {
+                "tags": [
+                    "官网"
+                ],
+                "summary": "查询证书列表",
+                "responses": {
+                    "200": {
+                        "description": "data:{\"image_save_path\":\"export/images/96a.jpg\", \"image_url\": \"http://...\"}",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/app.ResponseMsg"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/e-certs/{certid}/{id}": {
+            "get": {
+                "tags": [
+                    "官网"
+                ],
+                "summary": "查询用户证书",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "证书id",
+                        "name": "certid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "证书编号或身份证号",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "data:{\"image_save_path\":\"export/images/96a.jpg\", \"image_url\": \"http://...\"}",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/app.ResponseMsg"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/applicants/certs/{certid}": {
             "get": {
                 "security": [
@@ -142,7 +192,7 @@
                 "summary": "执行审核结果",
                 "parameters": [
                     {
-                        "description": "file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝), wechatid: 选中的记录",
+                        "description": "file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝), pids[]: 选中的记录",
                         "name": "data",
                         "in": "body",
                         "required": true,
@@ -391,16 +441,8 @@
                 }
             }
         },
-        "/api/v1/admin/images/certs/{certid}/{wechatid}": {
+        "/api/v1/admin/images/certs/{certid}/{pid}": {
             "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "后台管理"
                 ],
@@ -415,8 +457,8 @@
                     },
                     {
                         "type": "string",
-                        "description": "用户微信id",
-                        "name": "wechatid",
+                        "description": "身份证号",
+                        "name": "pid",
                         "in": "path",
                         "required": true
                     }
@@ -495,16 +537,8 @@
                 }
             }
         },
-        "/api/v1/weixin/images/certs/{certid}/{openid}": {
+        "/api/v1/weixin/e-certs/certs/{certid}/{openid}": {
             "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "微信公众号"
                 ],
@@ -520,7 +554,7 @@
                     {
                         "type": "string",
                         "description": "用户微信id",
-                        "name": "wechatid",
+                        "name": "openid",
                         "in": "path",
                         "required": true
                     }
@@ -685,7 +719,7 @@
                 "file_path": {
                     "type": "string"
                 },
-                "wechatid": {
+                "pids": {
                     "type": "array",
                     "items": {
                         "type": "string"

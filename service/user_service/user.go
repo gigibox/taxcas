@@ -18,7 +18,7 @@ func Add(user models.User) (bool, error){
 
 func UpdateCerts(user models.User, cert_id string, apply_status int) (bool, error) {
 	doc := models.C_users{}
-	if isExist, _ := models.MgoFindOne("user.wechatid", user.WechatID, col_users, &doc); !isExist {
+	if isExist, _ := models.MgoFindOne("user.personalid", user.PersonalID, col_users, &doc); !isExist {
 		doc.User = user
 		doc.Certs = append(doc.Certs, map[string]int{cert_id:apply_status})
 
@@ -38,7 +38,7 @@ func UpdateCerts(user models.User, cert_id string, apply_status int) (bool, erro
 			doc.Certs = append(doc.Certs, map[string]int{cert_id:apply_status})
 		}
 
-		return models.MgoUpsert("user.wechatid", user.WechatID,  col_users, doc)
+		return models.MgoUpsert("user.personalid", user.PersonalID,  col_users, doc)
 	}
 
 

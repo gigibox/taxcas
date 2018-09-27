@@ -5,7 +5,6 @@ import (
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"net/http"
 	"taxcas/middleware/cors"
-	"taxcas/middleware/jwt"
 	"taxcas/routers/api/admin"
 	"taxcas/routers/api/user"
 	"taxcas/routers/api/weixin"
@@ -40,10 +39,13 @@ func InitRouter() *gin.Engine {
 		if setting.ServerSetting.RunMode == "debug" {
 			public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}
+
+		public.GET("/e-certs", admin.GetCertList)
+		public.GET("/e-certs/:certid/:id", admin.OfficialWebsite)
 	}
 
 	apiv1 := r.Group("/api/v1")
-	apiv1.Use(jwt.JWT())
+	//apiv1.Use(jwt.JWT())
 	{
 		// 获取字体
 		apiv1.GET("/admin/fonts", admin.GetFonts)
@@ -63,9 +65,6 @@ func InitRouter() *gin.Engine {
 		// 预览证书
 		apiv1.GET("/admin/images/certs", admin.PreviewImage)
 
-		// 查看用户证书
-		apiv1.GET("/admin/images/certs/:certid/:wechatid", admin.UserCertificates)
-
 		// 获取申请状态
 		apiv1.GET("/admin/applicants/certs/:certid", admin.GetApplicantList)
 
@@ -77,6 +76,9 @@ func InitRouter() *gin.Engine {
 
 		// 修改密码
 		apiv1.PUT("/admin/password", admin.ChangePassword)
+
+		// 身份证号查询证书
+		public.GET("/admin/images/certs/:certid/:pid", admin.UserCertificates)
 	}
 
 	// 用户端接口
@@ -106,7 +108,7 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("weixin/wxquery/:out_refund_no", weixin.WXPayRefundQuery)
 
 		// 查看证书
-		apiv1.GET("/weixin/images/certs/:certid/:wechatid", admin.UserCertificates)
+		apiv1.GET("/weixin/e-certs/:certid/:wechatid", admin.UserCertificates)
 	}
 
 	return r

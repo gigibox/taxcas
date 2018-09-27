@@ -9,7 +9,6 @@ import (
 	"taxcas/pkg/logging"
 	"taxcas/pkg/upload"
 	"taxcas/pkg/util"
-	"taxcas/service/apply_service"
 )
 
 type S_cert struct {
@@ -69,7 +68,33 @@ func GetCertByID(id string, doc *models.C_certs) (bool, error) {
 	return models.MgoCheckKeyExist("certid", id, col_certs, &doc)
 }
 
-func GetCertImage(design *models.ImageDesigner, certid, wechatid string) (string, error) {
+func GetCertFile(apply *models.C_Apply) (string, error) {
+	var filePDF string
+
+	if apply.PDFSaveUrl != "" {
+		//return apply.PDFSaveUrl, nil
+	}
+
+	filePDF = export.GetExportPDFPath(apply.CertID) + apply.SerialNumber + ".pdf"
+
+	// 检查并创建文件夹
+	util.CheckDir(export.GetRuntimePath() + export.GetExportPDFPath(apply.CertID))
+
+	if err := models.Image2PDF(export.GetRuntimePath() + filePDF, export.GetRuntimePath() + apply.ImageSaveUrl); err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	// 更新电子证书图片信息
+	apply.PDFSaveUrl = filePDF
+	if ok , err := models.MgoUpsert("applicant.user.personalid", apply.PersonalID, "cert" + apply.CertID + "_apply", apply); !ok {
+		logging.Warn("Update applicant status:", err)
+	}
+
+	return filePDF, nil
+}
+
+func GetCertImage(design *models.ImageDesigner, apply *models.C_Apply) (string, error) {
 	var image string
 
 	// 预览证书, 设计模板
@@ -82,10 +107,8 @@ func GetCertImage(design *models.ImageDesigner, certid, wechatid string) (string
 			return "", err
 		}
 	} else { // 获取/生成用户证书
-		apply := models.C_Apply{}
 		cert  := models.C_certs{}
-		GetCertByID(certid, &cert)
-		apply_service.GetApplyByOpenid(certid, wechatid, &apply)
+		GetCertByID(apply.CertID, &cert)
 
 		// 已存在
 		if apply.ImageSaveUrl != "" {
@@ -93,29 +116,27 @@ func GetCertImage(design *models.ImageDesigner, certid, wechatid string) (string
 		}
 
 		// 生成
-		if apply.CertID == cert.CertID && apply.ApplyStatus == models.Passed && cert.ImageDesign.ImgName != ""{
-			designer := cert.ImageDesign
-			designer.Name.Str			= apply.Name
-			designer.EnglishName.Str 	= apply.EnglishName
-			designer.PersonalID.Str		= apply.PersonalID
-			designer.SerialNumber.Str	= apply.SerialNumber
-			designer.Date.Str			= apply.StudyDate
+		designer := cert.ImageDesign
+		designer.Name.Str			= apply.Name
+		designer.EnglishName.Str 	= apply.EnglishName
+		designer.PersonalID.Str		= apply.PersonalID
+		designer.SerialNumber.Str	= apply.SerialNumber
+		designer.Date.Str			= apply.StudyDate
 
-			image = export.GetExportImagePath(certid) + apply.SerialNumber + ".png"
+		image = export.GetExportImagePath(apply.CertID) + apply.SerialNumber + ".png"
 
-			// 检查并创建文件夹
-			util.CheckDir(export.GetRuntimePath() + export.GetExportImagePath(certid))
+		// 检查并创建文件夹
+		util.CheckDir(export.GetRuntimePath() + export.GetExportImagePath(apply.CertID))
 
-			if err := models.SignImage(image, &designer); err != nil {
-				log.Println(err)
-				return "", err
-			}
+		if err := models.SignImage(image, &designer); err != nil {
+			log.Println(err)
+			return "", err
+		}
 
-			// 更新电子证书图片信息
-			apply.ImageSaveUrl = image
-			if ok , err := models.MgoUpsert("applicant.user.wechatid", wechatid, "cert" + certid + "_apply", apply); !ok {
-				logging.Warn("Update applicant status:", err)
-			}
+		// 更新电子证书图片信息
+		apply.ImageSaveUrl = image
+		if ok , err := models.MgoUpsert("applicant.user.personalid", apply.PersonalID, "cert" + apply.CertID + "_apply", apply); !ok {
+			logging.Warn("Update applicant status:", err)
 		}
 	}
 

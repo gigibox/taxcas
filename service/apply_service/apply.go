@@ -18,9 +18,14 @@ type S_Apply struct {
 	Data models.C_Apply
 }
 
-func (this *S_Apply) CheckApplyExist() (bool, error) {
+func (this *S_Apply) CheckApplyExistByWX() (bool, error) {
 	result := models.C_certs{}
 	return models.MgoCheckKeyExist("applicant.user.wechatid", this.Data.WechatID, this.Collection, &result)
+}
+
+func (this *S_Apply) CheckApplyExistByID() (bool, error) {
+	result := models.C_certs{}
+	return models.MgoCheckKeyExist("applicant.user.personalid", this.Data.PersonalID, this.Collection, &result)
 }
 
 func (this *S_Apply) CheckCertByName() (bool, error) {
@@ -56,8 +61,8 @@ func (this *S_Apply) Add() (bool, error) {
 func (this *S_Apply) UpdateStatus(certid string) (bool) {
 		statusCode := this.Data.ApplyStatus
 
-		// 根据微信id 更新申请订单状态
-		if ok , err := models.MgoUpsert("applicant.user.wechatid", this.Data.WechatID, this.Collection, this.Data); !ok {
+		// 根据身份证号 更新申请订单状态
+		if ok , err := models.MgoUpsert("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data); !ok {
 			logging.Warn("Update applicant status:", err)
 			return false
 		}
@@ -69,7 +74,7 @@ func (this *S_Apply) UpdateStatus(certid string) (bool) {
 
 		// 修改用户申请状态
 		user := models.User{
-			WechatID : this.Data.WechatID,
+			PersonalID : this.Data.PersonalID,
 		}
 		user_service.UpdateCerts(user, certid, this.Data.ApplyStatus)
 
@@ -118,14 +123,21 @@ func GetApplyList(id, action string, page, limit int) (interface{}) {
 	}
 }
 
-func GetApplyByOpenid(certid, openid string, doc *models.C_Apply) (bool, error) {
+func GetApplyByPID(certid, pid string, doc *models.C_Apply) (bool, error) {
+	return models.MgoFindOne("applicant.user.personalid", pid, "cert" + certid + "_apply", doc)
+}
 
-	return models.MgoFindOne("applicant.user.wechatid", openid, "cert" + certid + "_apply", &doc)
+func GetApplyByOpenid(certid, openid string, doc *models.C_Apply) (bool, error) {
+	return models.MgoFindOne("applicant.user.wechatid", openid, "cert" + certid + "_apply", doc)
+}
+
+func GetApplyBySN(certid, sn string, doc *models.C_Apply) (bool, error) {
+	return models.MgoFindOne("serialnumber", sn, "cert" + certid + "_apply", doc)
 }
 
 // 根据请求类型判断需要导出的字段
 var title = map[string][]string {
-	"export" : []string{"编号", "申请证书", "微信ID", "申请人", "身份证号", "申请时间", "支付金额"},
+	"export" : []string{"编号", "申请证书", "申请人", "身份证号", "申请时间", "支付金额"},
 }
 func ExportFile(certid, act string) (string, error) {
 	fmt.Println(certid, " ", act)
@@ -164,7 +176,6 @@ func ExportFile(certid, act string) (string, error) {
 		row := []string{
 			docs[i].SerialNumber,
 			docs[i].CertName,
-			docs[i].WechatID,
 			docs[i].Name,
 			docs[i].PersonalID,
 			docs[i].StudyDate,
@@ -198,7 +209,7 @@ func ExportFile(certid, act string) (string, error) {
 	// 更新用户表状态
 	for i := range docs {
 		user := models.User{
-			WechatID : docs[i].WechatID,
+			PersonalID : docs[i].PersonalID,
 		}
 		user_service.UpdateCerts(user, certid, newCode)
 	}
@@ -206,7 +217,7 @@ func ExportFile(certid, act string) (string, error) {
 	return filecsv, err
 }
 
-func UpdateApplicants(certid, act, file string, wxids []string) (int, int) {
+func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 	var succeed, failure int
 
 	statusCode, ok := models.ActionMsg[act]
@@ -248,7 +259,7 @@ func UpdateApplicants(certid, act, file string, wxids []string) (int, int) {
 				continue
 			}
 
-			applyService.Data.WechatID = record[2]
+			applyService.Data.PersonalID = record[3]
 			if ok := applyService.UpdateStatus(certid); ok {
 				succeed ++
 			} else {
@@ -257,8 +268,8 @@ func UpdateApplicants(certid, act, file string, wxids []string) (int, int) {
 		}
 	} else {
 		// 手动选择
-		for i := range wxids{
-			applyService.Data.WechatID = wxids[i]
+		for i := range pids{
+			applyService.Data.PersonalID = pids[i]
 			if ok := applyService.UpdateStatus(certid); ok {
 				succeed ++
 			} else {
