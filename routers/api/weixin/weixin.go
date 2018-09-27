@@ -203,8 +203,8 @@ func WXPayRefund(c *gin.Context) {
 	params := make(wxpay.Params)
 	params.SetString("out_trade_no", out_trade_no).
 		SetString("out_refund_no", out_refund_no).
-		SetInt64("total_fee", 300).
-		SetInt64("refund_fee", 300)
+		SetInt64("total_fee", 1).
+		SetInt64("refund_fee", 1)
 
 	p, err := client.Refund(params)
 	if err != nil {
