@@ -462,7 +462,7 @@
                 }
             }
         },
-        "/api/v1/weixin/images/certs/{certid}/{wechatid}": {
+        "/api/v1/weixin/images/certs/{certid}/{openid}": {
             "get": {
                 "security": [
                     {

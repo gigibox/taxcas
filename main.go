@@ -3,16 +3,18 @@ package main
 import (
 	"fmt"
 	"github.com/fvbock/endless"
+	"gopkg.in/urfave/cli.v1"
+	"log"
 	"net/http"
+	"os"
 	"runtime"
 	"syscall"
+	"taxcas/models"
 	"taxcas/pkg/export"
 	"taxcas/pkg/gredis"
 	"taxcas/pkg/logging"
 	"taxcas/pkg/setting"
 	"taxcas/pkg/upload"
-
-	"taxcas/models"
 	"taxcas/routers"
 )
 
@@ -23,8 +25,11 @@ import (
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
 // @name Authorization
-func main() {
-	setting.Setup()
+
+var configFile string
+
+func runService() {
+	setting.Setup(configFile)
 	models.Setup()
 	logging.Setup()
 	gredis.Setup()
@@ -60,7 +65,31 @@ func main() {
 
 	err := server.ListenAndServe()
 	if err != nil {
-		logging.Error("Server err: %v", err)
+		log.Fatal("Server err: %v", err)
+	}
+}
+
+func main() {
+	app := cli.NewApp()
+	app.Name = "taxcas"
+	app.Version = "0.0.1"
+	app.Usage = "Certificate authentication system."
+	app.Flags = []cli.Flag {
+			cli.StringFlag{
+				Name:  "conf, c",
+				Value: "conf/app.ini",
+				Usage: "Specify configuration file.",
+			},
 	}
 
+	app.Action = func(c *cli.Context) error {
+		configFile = c.String("conf")
+		runService()
+		return nil
+	}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

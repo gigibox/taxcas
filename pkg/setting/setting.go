@@ -63,11 +63,11 @@ var RedisSetting = &Redis{}
 
 var cfg *ini.File
 
-func Setup() {
+func Setup(conf string) {
 	var err error
-	cfg, err = ini.Load("conf/app.ini")
+	cfg, err = ini.Load(conf)
 	if err != nil {
-		log.Fatalf("Fail to parse 'conf/app.ini': %v", err)
+		log.Fatalf("Fail to parse '%s': %v", conf, err)
 	}
 
 	mapTo("app", AppSetting)

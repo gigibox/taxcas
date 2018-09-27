@@ -12,28 +12,34 @@ var jwtSecret = []byte(setting.AppSetting.JwtSecret)
 type Claims struct {
 	User string `json:"user"`
 	Permission string `json:"permission"`
+	RefeshTime int64 `json:"ref"`
 	jwt.StandardClaims
 }
 
-func getExpireTime(rols string) (int64) {
+func getExpireTime(rols string) (int64, int64) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(1 * time.Hour)
+	expireTime := nowTime.Add(2 * time.Hour)
+	RefeshTime := nowTime.Add(1 * time.Hour)
 
 	switch rols {
 		case "admin":
 			expireTime = nowTime.Add(10 * time.Minute)
+			RefeshTime = nowTime.Add(5 * time.Minute)
 	}
 
-	return expireTime.Unix()
+	return expireTime.Unix(), RefeshTime.Unix()
 }
 
 func GenerateToken(roles, user string) (string) {
+	exp, ref := getExpireTime(roles)
+
 	claims := Claims{
-		user,
+		EncodeMD5(user),
 		roles,
+		ref,
 		jwt.StandardClaims{
 			IssuedAt: time.Now().Unix(),
-			ExpiresAt: getExpireTime(roles),
+			ExpiresAt: exp,
 			Issuer:    "taxcas-caishuidai",
 		},
 	}
