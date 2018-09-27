@@ -92,10 +92,10 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/weixin/openid/:code", weixin.WXGetOpenID)
 
 		// 获取支付订单
-		apiv1.GET("/weixin/wxorder/:openid", weixin.WXPayUnifyOrderReq)
+		apiv1.GET("/weixin/wxorder/:openid/:certid", weixin.WXPayUnifyOrderReq)
 
 		// 微信服务端回调
-		apiv1.POST("weixin/wxnotify", weixin.WXPayCallback)
+		apiv1.GET("weixin/wxnotify", weixin.WXPayCallback)
 
 		// 申请退款
 		apiv1.GET("weixin/wxrefund/:out_trade_no", weixin.WXPayRefund)
@@ -104,7 +104,7 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("weixin/wxquery/:out_refund_no", weixin.WXPayRefundQuery)
 
 		// 查看证书
-		apiv1.GET("/weixin/images/certs/:certid/:openid", admin.UserCertificates)
+		apiv1.GET("/weixin/images/certs/:certid/:wechatid", admin.UserCertificates)
 	}
 
 	return r

@@ -28,7 +28,6 @@ type App struct {
 	LogFileExt  string
 	TimeFormat  string
 }
-
 var AppSetting = &App{}
 
 type Server struct {
@@ -37,7 +36,6 @@ type Server struct {
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
 }
-
 var ServerSetting = &Server{}
 
 type Database struct {
@@ -48,7 +46,6 @@ type Database struct {
 	Name        string
 	TablePrefix string
 }
-
 var DatabaseSetting = &Database{}
 
 type Redis struct {
@@ -58,8 +55,16 @@ type Redis struct {
 	MaxActive   int
 	IdleTimeout time.Duration
 }
-
 var RedisSetting = &Redis{}
+
+type Weixin struct {
+	AppID      string
+	AppSecret  string
+	MchID      string
+	ApiKey     string
+	Notify_url string
+}
+var WeixinSetting = &Weixin{}
 
 var cfg *ini.File
 
@@ -74,6 +79,7 @@ func Setup(conf string) {
 	mapTo("server", ServerSetting)
 	mapTo("database", DatabaseSetting)
 	mapTo("redis", RedisSetting)
+	mapTo("weixin", WeixinSetting)
 
 	AppSetting.UploadAllowMaxSize = AppSetting.UploadAllowMaxSize * 1024 * 1024
 	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
