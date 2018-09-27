@@ -148,25 +148,25 @@ var GlobalDesigner = ImageDesigner{
 }
 
 type WXPayNotifyReq struct {
-	Return_code    string `xml:"return_code" json:"return_code"`
-	Return_msg     string `xml:"return_msg" json:"return_msg"`
-	Appid          string `xml:"appid" json:"appid"`
-	Mch_id         string `xml:"mch_id" json:"mch_id"`
-	Nonce          string `xml:"nonce_str" json:"nonce_str"`
-	Sign           string `xml:"sign" json:"sign"`
-	Result_code    string `xml:"result_code" json:"result_code"`
-	Openid         string `xml:"openid" json:"openid"`
-	Is_subscribe   string `xml:"is_subscribe" json:"is_subscribe"`
-	Trade_type     string `xml:"trade_type" json:"trade_type"`
-	Bank_type      string `xml:"bank_type" json:"bank_type"`
-	Total_fee      string `xml:"total_fee" json:"total_fee"`
-	Fee_type       string `xml:"fee_type" json:"fee_type"`
-	Cash_fee       int    `xml:"cash_fee" json:"cash_fee"`
-	Cash_fee_type  string `xml:"cash_fee_type" json:"cash_fee_type"`
-	Transaction_id string `xml:"transaction_id" json:"transaction_id"`
-	Out_trade_no   string `xml:"out_trade_no" json:"out_trade_no"`
-	Attach         string `xml:"attach" json:"attach"`
-	Time_end       string `xml:"time_end" json:"time_end"`
+	Return_code    string `xml:"return_code" json:"return_code" bson:"return_code"`
+	Return_msg     string `xml:"return_msg" json:"return_msg" bson:"return_msg"`
+	Appid          string `xml:"appid" json:"appid" bson:"appid"`
+	Mch_id         string `xml:"mch_id" json:"mch_id" bson:"mch_id"`
+	Nonce          string `xml:"nonce_str" json:"nonce_str" bson:"nonce_str"`
+	Sign           string `xml:"sign" json:"sign" bson:"sign"`
+	Result_code    string `xml:"result_code" json:"result_code" bson:"result_code"`
+	Openid         string `xml:"openid" json:"openid" bson:"openid"`
+	Is_subscribe   string `xml:"is_subscribe" json:"is_subscribe" bson:"is_subscribe"`
+	Trade_type     string `xml:"trade_type" json:"trade_type" bson:"trade_type"`
+	Bank_type      string `xml:"bank_type" json:"bank_type" bson:"bank_type"`
+	Total_fee      string `xml:"total_fee" json:"total_fee" bson:"total_fee"`
+	Fee_type       string `xml:"fee_type" json:"fee_type" bson:"fee_type"`
+	Cash_fee       int    `xml:"cash_fee" json:"cash_fee" bson:"cash_fee"`
+	Cash_fee_type  string `xml:"cash_fee_type" json:"cash_fee_type" bson:"cash_fee_type"`
+	Transaction_id string `xml:"transaction_id" json:"transaction_id" bson:"transaction_id"`
+	Out_trade_no   string `xml:"out_trade_no" json:"out_trade_no" bson:"out_trade_no"`
+	Attach         string `xml:"attach" json:"attach" bson:"attach"`
+	Time_end       string `xml:"time_end" json:"time_end" bson:"time_end"`
 }
 
 type WXPayNotifyResp struct {
