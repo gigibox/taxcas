@@ -27,6 +27,10 @@ func GetApiCertFullPath() string {
 	return setting.AppSetting.RuntimeRootPath + setting.WeixinSetting.ApiCert
 }
 
+func GetTemplateFullPath() string {
+	return setting.AppSetting.RuntimeRootPath + setting.WeixinSetting.Template
+}
+
 func CheckImageExt(fileName string) bool {
 	ext := file.GetExt(fileName)
 	for _, allowExt := range setting.AppSetting.ImageAllowExts {

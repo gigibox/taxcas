@@ -107,6 +107,9 @@ func InitRouter() *gin.Engine {
 		// 查询退款
 		apiv1.GET("weixin/wxquery/:out_refund_no", weixin.WXPayRefundQuery)
 
+		// 发送模板消息
+		apiv1.GET("weixin/wxtemplate/:openid", weixin.WXSendTemplateMsg)
+
 		// 查看证书
 		apiv1.GET("/weixin/e-certs/:certid/:wechatid", admin.UserCertificates)
 	}

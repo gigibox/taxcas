@@ -68,6 +68,7 @@ type Weixin struct {
 	ApiKey     string
 	Notify_url string
 	ApiCert    string
+	Template   string
 }
 
 var WeixinSetting = &Weixin{}
