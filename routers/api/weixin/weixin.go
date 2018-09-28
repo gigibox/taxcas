@@ -325,16 +325,19 @@ type sendTemplateData struct {
 var accessToken *AccessToken
 
 func WXSendTemplateMsg(c *gin.Context) {
+	appG := app.Gin{c}
 	openid := c.Param("openid")
-	e, _ := sendTmplete(openid, "PhRgTu9MHjAJBSKvNJn9O2t2BNgoAG1z0GvIfUlFQVo", "https://tax.caishuidai.com/")
-	b, err := json.Marshal(e)
+	s, _ := sendTmplete(openid, "PhRgTu9MHjAJBSKvNJn9O2t2BNgoAG1z0GvIfUlFQVo", "https://tax.caishuidai.com/")
+	b, err := json.Marshal(s)
 	if err != nil {
 		// fmt.Fprintf(, "error")
 		fmt.Println("error")
+		appG.Response(http.StatusOK, false, e.ERROR, "发送模板消息失败")
 	}
 	//返回发送结果
 	// fmt.Fprintf(, string(b))
 	fmt.Println(string(b))
+	appG.Response(http.StatusOK, true, e.SUCCESS, b)
 }
 
 func sendTmplete(openid, templateID, backUrl string) (string, error) {
