@@ -125,7 +125,7 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 
 	prepay_id := p.GetString("prepay_id")
 	appid := p.GetString("appid")
-	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
+	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]interface{}{
 		"prepay_id": prepay_id,
 		"appid":     appid,
 		"price":     price,
