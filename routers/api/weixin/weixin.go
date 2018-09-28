@@ -112,7 +112,6 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	params.SetString("body", result.CertName).
 		SetString("out_trade_no", out_trade_no).
 		SetInt64("total_fee", int64(price)).
-		SetInt64("total_fee", 1).
 		SetString("spbill_create_ip", ip).
 		SetString("notify_url", setting.WeixinSetting.Notify_url).
 		SetString("openid", openid).
@@ -232,11 +231,11 @@ func WXPayRefund(c *gin.Context) {
 // @Router  /api/v1/weixin/wxquery/{out_trade_no} [get]
 func WXPayRefundQuery(c *gin.Context) {
 	appG := app.Gin{c}
-	out_refund_no := c.Param("out_refund_no")
+	out_trade_no := c.Param("out_trade_no")
 
 	client := wxpay.NewClient(wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeixinSetting.MchID, setting.WeixinSetting.ApiKey, false))
 	params := make(wxpay.Params)
-	params.SetString("out_refund_no", out_refund_no)
+	params.SetString("out_trade_no", out_trade_no)
 
 	p, err := client.RefundQuery(params)
 	if err != nil {
