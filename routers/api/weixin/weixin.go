@@ -1,6 +1,7 @@
 package weixin
 
 import (
+	"bytes"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
@@ -75,7 +76,7 @@ func WXGetOpenID(c *gin.Context) {
 	fmt.Println("=======================")
 
 	// 返回token
-	c.Header("Authorization", util.GenerateToken("admin", util.EncodeMD5(openid)))
+	c.Header("Authorization", util.GenerateToken("weixin", util.EncodeMD5(openid)))
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
 		"openid": openid,
 	})
@@ -433,4 +434,59 @@ func getAccessToken() string {
 	fmt.Println("当前Token为：", accessToken.Token)
 	fmt.Printf("过期时间还有：%d秒\r\n", 7200-(time.Now().Unix()-accessToken.CreateTime))
 	return accessToken.Token
+}
+
+type CustomServiceMsg struct {
+	ToUser  string         `json:"touser"`
+	MsgType string         `json:"msgtype"`
+	Text    TextMsgContent `json:"text"`
+}
+
+type TextMsgContent struct {
+	Content string `json:"content"`
+}
+
+func WXSendText(c *gin.Context) {
+	appG := app.Gin{c}
+	openid := c.Param("openid")
+
+	accessToken := getAccessToken()
+	msg := "你好" + "\U0001f604"
+	err := pushCustomMsg(accessToken, openid, msg)
+	if err != nil {
+		fmt.Println("Push custom service message err:", err)
+		return
+	}
+}
+
+func pushCustomMsg(accessToken, toUser, msg string) error {
+	csMsg := &CustomServiceMsg{
+		ToUser:  toUser,
+		MsgType: "text",
+		Text:    TextMsgContent{Content: msg},
+	}
+
+	body, err := json.MarshalIndent(csMsg, " ", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(body))
+
+	postReq, err := http.NewRequest("POST",
+		strings.Join([]string{customServicePostUrl, "?access_token=", accessToken}, ""),
+		bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+
+	postReq.Header.Set("Content-Type", "application/json; encoding=utf-8")
+
+	client := &http.Client{}
+	resp, err := client.Do(postReq)
+	if err != nil {
+		return err
+	}
+	resp.Body.Close()
+
+	return nil
 }

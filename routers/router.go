@@ -111,6 +111,9 @@ func InitRouter() *gin.Engine {
 		// 发送模板消息
 		apiv1.GET("weixin/wxtemplate/:openid", weixin.WXSendTemplateMsg)
 
+		// 发送文本消息
+		apiv1.GET("weixin/wxtext/:openid", weixin.WXSendText)
+
 		// 查看证书
 		apiv1.GET("/weixin/e-certs/:certid/:wechatid", admin.UserCertificates)
 	}
