@@ -360,8 +360,8 @@ paths:
       summary: 上传证书模板
       tags:
       - 后台管理
-  /api/v1/admin/images/cert:
-    get:
+  /api/v1/admin/images/certs:
+    post:
       parameters:
       - description: 证书详细信息
         in: body

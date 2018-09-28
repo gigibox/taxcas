@@ -20,6 +20,7 @@ import (
 	"taxcas/pkg/e"
 	"taxcas/pkg/setting"
 	"taxcas/pkg/upload"
+	"taxcas/pkg/util"
 	"taxcas/service/weixin_service"
 	"time"
 	//	"errors"
@@ -72,10 +73,11 @@ func WXGetOpenID(c *gin.Context) {
 	fmt.Println("=======================")
 	fmt.Println(result)
 	fmt.Println("=======================")
-	//c.JSON(http.StatusOK, gin.H{"openid": openid, "token": "123456"})
+
+	// 返回token
+	c.Header("Authorization", util.GenerateToken("admin", util.EncodeMD5(openid)))
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
 		"openid": openid,
-		"token":  "123456",
 	})
 }
 

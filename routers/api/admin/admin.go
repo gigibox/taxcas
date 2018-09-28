@@ -112,7 +112,7 @@ func AddCert(c *gin.Context) {
 // @Produce json
 // @Param   positions body models.ImageDesigner false "证书详细信息"
 // @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"upload/images/96a.jpg", "image_url": "http://..."}"
-// @Router  /api/v1/admin/images/certs[get]
+// @Router  /api/v1/admin/images/certs [post]
 func PreviewImage(c *gin.Context) {
 	appG := app.Gin{c}
 

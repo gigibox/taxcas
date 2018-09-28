@@ -41,6 +41,9 @@ func InitRouter() *gin.Engine {
 			public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}
 
+		// 获取openid
+		public.GET("/weixin/openid/:code", weixin.WXGetOpenID)
+
 		public.GET("/e-certs", admin.GetCertList)
 		public.GET("/e-certs/:certid/:id", admin.OfficialWebsite)
 	}
@@ -64,7 +67,7 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/admin/excels", admin.UploadExcel)
 
 		// 预览证书
-		apiv1.GET("/admin/images/certs", admin.PreviewImage)
+		apiv1.POST("/admin/images/certs", admin.PreviewImage)
 
 		// 获取申请状态
 		apiv1.GET("/admin/applicants/certs/:certid", admin.GetApplicantList)
@@ -92,9 +95,6 @@ func InitRouter() *gin.Engine {
 
 		// 查询证书
 		apiv1.GET("/weixin/certs", admin.GetCertList)
-
-		// 获取openid
-		apiv1.GET("/weixin/openid/:code", weixin.WXGetOpenID)
 
 		// 获取支付订单
 		apiv1.GET("/weixin/wxorder/:openid", weixin.WXPayUnifyOrderReq)

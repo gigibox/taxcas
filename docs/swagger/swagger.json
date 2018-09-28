@@ -373,8 +373,8 @@
                 }
             }
         },
-        "/api/v1/admin/images/cert": {
-            "get": {
+        "/api/v1/admin/images/certs": {
+            "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
