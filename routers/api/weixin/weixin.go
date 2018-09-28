@@ -323,17 +323,9 @@ type sendTemplateData struct {
 }
 
 var accessToken *AccessToken
-var templateResult map[string]map[string]map[string]string
 
 func WXSendTemplateMsg(c *gin.Context) {
 	openid := c.Param("openid")
-	templateData, err := ioutil.ReadFile(upload.GetTemplateFullPath())
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(2)
-	}
-
-	json.Unmarshal([]byte(templateData), &templateResult)
 	e, _ := sendTmplete(openid, "PhRgTu9MHjAJBSKvNJn9O2t2BNgoAG1z0GvIfUlFQVo", "https://tax.caishuidai.com/")
 	b, err := json.Marshal(e)
 	if err != nil {
@@ -346,11 +338,21 @@ func WXSendTemplateMsg(c *gin.Context) {
 }
 
 func sendTmplete(openid, templateID, backUrl string) (string, error) {
+	var templateResult map[string]map[string]map[string]string
 	//解析模板消息
 	sendTemplateData := new(sendTemplateData)
 	sendTemplateData.Touser = openid
 	sendTemplateData.TemplateId = templateID
 	sendTemplateData.Url = backUrl
+
+	templateData, err := ioutil.ReadFile(upload.GetTemplateFullPath())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(2)
+	}
+
+	json.Unmarshal([]byte(templateData), &templateResult)
+
 	sendTemplateData.Data = templateResult[templateID]
 	reqBody, err := json.Marshal(sendTemplateData)
 	if err != nil {
