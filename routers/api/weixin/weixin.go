@@ -473,7 +473,7 @@ func pushCustomMsg(accessToken, toUser, msg string) error {
 	fmt.Println(string(body))
 
 	postReq, err := http.NewRequest("POST",
-		strings.Join([]string{customServicePostUrl, "?access_token=", accessToken}, ""),
+		strings.Join([]string{"https://api.weixin.qq.com/cgi-bin/message/custom/send", "?access_token=", accessToken}, ""),
 		bytes.NewReader(body))
 	if err != nil {
 		return err
