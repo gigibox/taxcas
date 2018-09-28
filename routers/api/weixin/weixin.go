@@ -89,30 +89,29 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	appG := app.Gin{c}
 	ip := c.ClientIP()
 	openid := c.Param("openid")
-	/*
-		certid := c.Param("certid")
-		result := models.C_certs{}
-		isExist, err := models.MgoFindOne("certid", certid, "certs", &result)
-		if err != nil {
-			appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT_FAIL, nil)
-		}
-		if isExist == false {
-			appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
-		}
+	certid := c.Param("certid")
 
-		price := result.Price
-		fmt.Println(price)
-	*/
+	result := models.C_certs{}
+	isExist, err := models.MgoFindOne("certid", certid, "certs", &result)
+	if err != nil {
+		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT_FAIL, nil)
+	}
+	if isExist == false {
+		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
+	}
+
+	price := result.Price
+	fmt.Println(price)
+
 	out_trade_no := UniqueId()
 	fmt.Println(ip)
-	//	fmt.Println(result)
+	fmt.Println(result)
 
 	client := wxpay.NewClient(wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeixinSetting.MchID, setting.WeixinSetting.ApiKey, false))
 	params := make(wxpay.Params)
-	//	params.SetString("body", result.CertName).
-	params.SetString("body", "坤腾-证书").
+	params.SetString("body", result.CertName).
 		SetString("out_trade_no", out_trade_no).
-		//	SetInt64("total_fee", int64(price)).
+		SetInt64("total_fee", int64(price)).
 		SetInt64("total_fee", 1).
 		SetString("spbill_create_ip", ip).
 		SetString("notify_url", setting.WeixinSetting.Notify_url).
@@ -129,10 +128,10 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
 		"prepay_id": prepay_id,
 		"appid":     appid,
-		"price":     "1",
+		"price":     price,
 		"apikey":    setting.WeixinSetting.ApiKey,
 		"orderid":   out_trade_no,
-		"name":      "test",
+		"name":      result.CertName,
 	})
 	//c.JSON(http.StatusOK, gin.H{"prepay_id": prepay_id, "appid": appid})
 }
