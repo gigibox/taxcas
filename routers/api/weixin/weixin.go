@@ -457,6 +457,7 @@ func WXSendText(c *gin.Context) {
 		fmt.Println("Push custom service message err:", err)
 		return
 	}
+	appG.Response(http.StatusOK, true, e.SUCCESS, "SUCCESS")
 }
 
 func pushCustomMsg(accessToken, toUser, msg string) error {
