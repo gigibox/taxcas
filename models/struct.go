@@ -160,7 +160,7 @@ type WXPayNotifyReq struct {
 	Is_subscribe   string `xml:"is_subscribe" json:"is_subscribe" bson:"is_subscribe"`
 	Trade_type     string `xml:"trade_type" json:"trade_type" bson:"trade_type"`
 	Bank_type      string `xml:"bank_type" json:"bank_type" bson:"bank_type"`
-	Total_fee      string `xml:"total_fee" json:"total_fee" bson:"total_fee"`
+	Total_fee      int    `xml:"total_fee" json:"total_fee" bson:"total_fee"`
 	Fee_type       string `xml:"fee_type" json:"fee_type" bson:"fee_type"`
 	Cash_fee       int    `xml:"cash_fee" json:"cash_fee" bson:"cash_fee"`
 	Cash_fee_type  string `xml:"cash_fee_type" json:"cash_fee_type" bson:"cash_fee_type"`

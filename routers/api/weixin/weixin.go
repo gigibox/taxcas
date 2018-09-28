@@ -200,12 +200,21 @@ func WXPayRefund(c *gin.Context) {
 	account := wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeixinSetting.MchID, setting.WeixinSetting.ApiKey, false)
 	account.SetCertData(upload.GetApiCertFullPath())
 
+	result := models.WXPayNotifyReq{}
+	isExist, err := models.MgoFindOne("out_trade_no", out_trade_no, weixin_service.Col_order, &result)
+	if err != nil {
+		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT_FAIL, nil)
+	}
+	if isExist == false {
+		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
+	}
+
 	client := wxpay.NewClient(account)
 	params := make(wxpay.Params)
 	params.SetString("out_trade_no", out_trade_no).
 		SetString("out_refund_no", out_refund_no).
-		SetInt64("total_fee", 1).
-		SetInt64("refund_fee", 1)
+		SetInt64("total_fee", int64(result.Total_fee)).
+		SetInt64("refund_fee", int64(result.Total_fee))
 
 	p, err := client.Refund(params)
 	if err != nil {
