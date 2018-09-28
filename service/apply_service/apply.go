@@ -88,7 +88,7 @@ func New(col string, commit models.Applicant) (*S_Apply) {
 		Collection: col,
 		Data: models.C_Apply{
 			Applicant: commit,
-			ApplyDate: int(time.Now().Unix()),
+			ApplyDate: time.Now().Unix(),
 		},
 	}
 }

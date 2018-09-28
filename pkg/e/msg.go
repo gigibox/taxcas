@@ -42,6 +42,8 @@ var MsgFlags = map[int]string{
 	ERROR_GET_USER_CERT_IMAGES:		 "未查询到该用户的电子证书",
 	ERROR_GET_USER_CERT_FILES:		 "未查询到该用户的电子证书",
 	ERROR_AUTH_CHANGE_PASSWORD_FAIL: "修改密码时发生错误",
+	ERROR_AUTH_CHECK_USRNAME_FAIL:   "用户名不存在",
+	ERROR_AUTH_CHECK_PASSWORD_FAIL:  "密码不正确",
 }
 
 func GetMsg(code int) string {

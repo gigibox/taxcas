@@ -9,7 +9,7 @@ import (
 func CheckAuth(username, password string) (bool, int) {
 	doc := models.C_admin{}
 
-	if _, err := models.MgoFindOne(username, password, "admin", &doc); err != nil {
+	if _, err := models.MgoFindOne("username", username, "admin", &doc); err != nil {
 		return false, e.ERROR_AUTH_CHECK_USRNAME_FAIL
 	}
 
@@ -22,11 +22,11 @@ func CheckAuth(username, password string) (bool, int) {
 
 func ChangePassword(username, password string) (bool, error) {
 	administrator := models.C_admin{
-		username,
-		util.EncodeMD5(password),
+		Username: username,
+		Password: util.EncodeMD5(password),
 	}
 
-	if ok, err := models.MgoUpdateAll(username, password, "admin", administrator); !ok {
+	if ok, err := models.MgoUpdate("username", username, "admin", administrator); !ok {
 		return false, err
 	}
 

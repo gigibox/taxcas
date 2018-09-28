@@ -34,7 +34,7 @@ func GenerateToken(roles, user string) (string) {
 	exp, ref := getExpireTime(roles)
 
 	claims := Claims{
-		EncodeMD5(user),
+		user,
 		roles,
 		ref,
 		jwt.StandardClaims{
@@ -72,5 +72,5 @@ func RefreshToken(token string) (string) {
 
 	// 从redis读取已刷新的token, 若不存在, 生成新的
 
-	return GenerateToken(claims.User, claims.Permission)
+	return GenerateToken(claims.Permission, claims.User)
 }

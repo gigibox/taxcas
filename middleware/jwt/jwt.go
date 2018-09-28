@@ -18,6 +18,9 @@ func JWT() gin.HandlerFunc {
 		nowTime := time.Now().Unix()
 
 		authString := c.GetHeader("Authorization")
+		if authString == "" {
+			authString = c.PostForm("Authorization")
+		}
 		kv := strings.Split(authString, " ")
 		if len(kv) != 2 || kv[0] != "Bearer" {
 			code = e.ERROR_AUTH

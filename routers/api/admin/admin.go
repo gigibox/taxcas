@@ -89,6 +89,10 @@ func AddCert(c *gin.Context) {
 		return
 	}
 
+	// 暂时写死设计模板
+	n := cert.ImageDesign.ImgName
+	cert.ImageDesign = models.GlobalDesigner
+	cert.ImageDesign.ImgName = n
 	certService := cert_service.S_cert{Collection: "certs", Data: cert}
 
 	if isExist, _ := certService.CheckExist(); !isExist {
@@ -96,10 +100,6 @@ func AddCert(c *gin.Context) {
 		return
 	}
 
-	// 暂时写死设计模板
-	n := cert.ImageDesign.ImgName
-	cert.ImageDesign = models.GlobalDesigner
-	cert.ImageDesign.ImgName = n
 
 	isAdded, err := certService.Add()
 
@@ -148,7 +148,7 @@ func PreviewImage(c *gin.Context) {
 func GetFonts(c *gin.Context) {
 	appG := app.Gin{C: c}
 
-	appG.Response(http.StatusBadRequest, true, e.SUCCESS, util.GetFontsList())
+	appG.Response(http.StatusOK, true, e.SUCCESS, util.GetFontsList())
 }
 
 // @Summary  上传证书模板
@@ -187,7 +187,7 @@ func UploadImage(c *gin.Context) {
 	}
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
-		"imageURL":      util.GetAppFullUrl(imageName),
+		"imageURL":      util.GetAppFullUrl(upload.GetImagePath() + imageName),
 		"imageSavePath": upload.GetImagePath() + imageName,
 	})
 }
@@ -341,7 +341,7 @@ func UserCertificates(c *gin.Context) {
 }
 
 // @Summary 查询用户证书
-// @Tags 	官网
+// @Tags 	开放接口
 // @Param   certid path string true "证书id"
 // @Param   id path string true "证书编号或身份证号"
 // @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
@@ -393,18 +393,18 @@ func OfficialWebsite(c *gin.Context) {
 }
 
 // @Summary 查看用户证书
-// @Tags 	微信公众号
+// @Tags 	开放接口
 // @Param   certid path string true "证书id"
 // @Param   openid path string true "用户微信id"
 // @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
 // @Router  /api/v1/weixin/e-certs/certs/{certid}/{openid} [get]
-func _____(c *gin.Context) {
+func swagger_a(c *gin.Context) {
 }
 
 // @Summary 查询证书列表
-// @Tags 	官网
+// @Tags 	开放接口
 // @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
 // @Router  /api/e-certs [get]
-func ___0() {
+func swagger_b() {
 
 }

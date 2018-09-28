@@ -100,14 +100,15 @@ type C_users struct {
 type C_Apply struct {
 	Applicant
 	PayAmount      int    `json:"pay_amount"`    // 支付金额
-	PayOrder       int    `json:"pay_order"`     // 支付订单
+	PayOrder       string `json:"pay_order"`     // 支付订单
 	PayStatus      int    `json:"pay_status"`    // 支付状态
-	SerialNumber   string `json:"serial_number"` // 证书编号
+	PayTime        int64  `json:"pay_time"`      // 支付状态
+	SerialNumber   string `json:"serial_number"`   // 证书编号
 	ImageSaveUrl   string `json:"image_save_url"`
 	PDFSaveUrl     string `json:"pdf_save_url"`
 	ApplyStatus    int    `json:"apply_status"`     // 申请状态
-	ApplyStatusMsg string `json:"apply_status_msg"` //申请状态信息
-	ApplyDate      int    `json:"apply_date"`       // 申请时间
+	ApplyStatusMsg string `json:"apply_status_msg"` // 申请状态信息
+	ApplyDate      int64  `json:"apply_date"`       // 申请时间
 }
 
 var GlobalDesigner = ImageDesigner{

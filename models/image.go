@@ -150,7 +150,7 @@ func SignImage(imagePath string,  design *ImageDesigner) (error) {
 		FontSize:   DefaultFontSize,
 		Dpi:        DefaultDpi,
 		startPoint: image.ZP,
-		signPoint:  image.Point{X: 595, Y: 842}, // A4 72dpi
+		signPoint:  image.Point{X: 594, Y: 841}, // < A4 72dpi
 	}
 
 	if err := signWriter.Sign(srcImage, saveImage, design); err != nil {

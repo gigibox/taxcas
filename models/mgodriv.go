@@ -69,7 +69,13 @@ func MgoCheckKeyExist(key string, value interface{}, col string, result interfac
 	return false, err
 }
 
-func MgoUpdate(key, value, col string, doc interface{}) (bool, error) {
+func MgoUpdate(key string, value interface{}, col string, doc interface{}) (bool, error) {
+	c := session.DB(setting.DatabaseSetting.Name).C(setting.DatabaseSetting.TablePrefix + col)
+
+	if err := c.Update(bson.M{key: value}, doc); err !=nil {
+		return false, err
+	}
+
 	return true, nil
 }
 

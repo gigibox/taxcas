@@ -10,10 +10,11 @@
     "paths": {
         "/api/admin/login": {
             "get": {
+                "description": "登陆成功后返回 \"success\":true, 并在header中返回token, \"Authorization: token\". 后续访问接口需要在header中添加该字段 \"Authorization: Bearer token\"",
                 "tags": [
-                    "认证授权"
+                    "开放接口"
                 ],
-                "summary": "用户登陆",
+                "summary": "后台登陆",
                 "parameters": [
                     {
                         "type": "string",
@@ -32,40 +33,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "data\":{\"token\":string}",
-                        "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/app.ResponseMsg"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/admin/password": {
-            "put": {
-                "tags": [
-                    "后台管理"
-                ],
-                "summary": "修改密码",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The username",
-                        "name": "username",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The password",
-                        "name": "password",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "data\":{\"token\":string}",
+                        "description": "OK",
                         "schema": {
                             "type": "object",
                             "$ref": "#/definitions/app.ResponseMsg"
@@ -77,7 +45,7 @@
         "/api/e-certs": {
             "get": {
                 "tags": [
-                    "官网"
+                    "开放接口"
                 ],
                 "summary": "查询证书列表",
                 "responses": {
@@ -94,7 +62,7 @@
         "/api/e-certs/{certid}/{id}": {
             "get": {
                 "tags": [
-                    "官网"
+                    "开放接口"
                 ],
                 "summary": "查询用户证书",
                 "parameters": [
@@ -474,6 +442,43 @@
                 }
             }
         },
+        "/api/v1/admin/password": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "后台管理"
+                ],
+                "summary": "修改密码",
+                "parameters": [
+                    {
+                        "description": "用户名 | 新旧密码",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/admin.changepwd"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/app.ResponseMsg"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/weixin/applicants/users": {
             "post": {
                 "security": [
@@ -540,7 +545,7 @@
         "/api/v1/weixin/e-certs/certs/{certid}/{openid}": {
             "get": {
                 "tags": [
-                    "微信公众号"
+                    "开放接口"
                 ],
                 "summary": "查看用户证书",
                 "parameters": [
@@ -710,6 +715,20 @@
         }
     },
     "definitions": {
+        "admin.changepwd": {
+            "type": "object",
+            "properties": {
+                "new_password": {
+                    "type": "string"
+                },
+                "old_password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "admin.parameters": {
             "type": "object",
             "properties": {

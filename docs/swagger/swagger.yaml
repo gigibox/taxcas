@@ -1,4 +1,13 @@
 definitions:
+  admin.changepwd:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+      username:
+        type: string
+    type: object
   admin.parameters:
     properties:
       action:
@@ -114,6 +123,8 @@ info:
 paths:
   /api/admin/login:
     get:
+      description: '登陆成功后返回 "success":true, 并在header中返回token, "Authorization: token".
+        后续访问接口需要在header中添加该字段 "Authorization: Bearer token"'
       parameters:
       - description: The username for login
         in: query
@@ -127,35 +138,13 @@ paths:
         type: string
       responses:
         "200":
-          description: data":{"token":string}
+          description: OK
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
-      summary: 用户登陆
+      summary: 后台登陆
       tags:
-      - 认证授权
-  /api/admin/password:
-    put:
-      parameters:
-      - description: The username
-        in: query
-        name: username
-        required: true
-        type: string
-      - description: The password
-        in: query
-        name: password
-        required: true
-        type: string
-      responses:
-        "200":
-          description: data":{"token":string}
-          schema:
-            $ref: '#/definitions/app.ResponseMsg'
-            type: object
-      summary: 修改密码
-      tags:
-      - 后台管理
+      - 开放接口
   /api/e-certs:
     get:
       responses:
@@ -167,7 +156,7 @@ paths:
             type: object
       summary: 查询证书列表
       tags:
-      - 官网
+      - 开放接口
   /api/e-certs/{certid}/{id}:
     get:
       parameters:
@@ -190,7 +179,7 @@ paths:
             type: object
       summary: 查询用户证书
       tags:
-      - 官网
+      - 开放接口
   /api/v1/admin/applicants/certs/{certid}:
     get:
       description: 查询指定证书的申领信息
@@ -417,6 +406,29 @@ paths:
       summary: 查看用户证书
       tags:
       - 后台管理
+  /api/v1/admin/password:
+    put:
+      parameters:
+      - description: 用户名 | 新旧密码
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/admin.changepwd'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 修改密码
+      tags:
+      - 后台管理
   /api/v1/weixin/applicants/users:
     post:
       parameters:
@@ -478,7 +490,7 @@ paths:
             type: object
       summary: 查看用户证书
       tags:
-      - 微信公众号
+      - 开放接口
   /api/v1/weixin/openid/{code}:
     get:
       parameters:

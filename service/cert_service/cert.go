@@ -72,7 +72,7 @@ func GetCertFile(apply *models.C_Apply) (string, error) {
 	var filePDF string
 
 	if apply.PDFSaveUrl != "" {
-		//return apply.PDFSaveUrl, nil
+		return apply.PDFSaveUrl, nil
 	}
 
 	filePDF = export.GetExportPDFPath(apply.CertID) + apply.SerialNumber + ".pdf"
@@ -106,7 +106,8 @@ func GetCertImage(design *models.ImageDesigner, apply *models.C_Apply) (string, 
 			log.Println(err)
 			return "", err
 		}
-	} else { // 获取/生成用户证书
+	} else {
+		// 获取/生成用户证书
 		cert  := models.C_certs{}
 		GetCertByID(apply.CertID, &cert)
 
