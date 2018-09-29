@@ -1,7 +1,7 @@
 package weixin
 
 import (
-//	"bytes"
+	//	"bytes"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
@@ -14,7 +14,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-//	"os"
+	//	"os"
 	"sort"
 	"strings"
 	"taxcas/models"
@@ -25,7 +25,7 @@ import (
 	"taxcas/pkg/util"
 	"taxcas/service/apply_service"
 	"taxcas/service/weixin_service"
-//	"time"
+	//	"time"
 )
 
 // @Summary 获取用户openid
@@ -112,7 +112,7 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 		Collection: "cert" + certid + "_apply",
 	}
 
-	apply_service.GetApplyByOpenid(certid,openid,&applyService.Data)
+	apply_service.GetApplyByOpenid(certid, openid, &applyService.Data)
 	// 收费证书
 	if price > 0 {
 		out_trade_no := UniqueId()
