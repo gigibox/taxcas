@@ -2,13 +2,13 @@ package apply_service
 
 import (
 	"encoding/csv"
-	"fmt"
 	"io"
 	"os"
 	"strconv"
 	"taxcas/models"
 	"taxcas/pkg/export"
 	"taxcas/pkg/logging"
+	"taxcas/routers/api/weixin"
 	"taxcas/service/user_service"
 	"time"
 )
@@ -63,12 +63,12 @@ func (this *S_Apply) UpdateStatus() (bool) {
 
 		// 根据身份证号 更新申请订单状态
 		if this.Data.PersonalID != "" {
-			if ok , err := models.MgoUpsert("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data); !ok {
+			if ok , err := models.MgoUpdate("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data); !ok {
 				logging.Warn("Update applicant status:", err)
 				return false
 			}
 		} else if this.Data.WechatID != "" {
-			if ok , err := models.MgoUpsert("applicant.user.wechatid", this.Data.WechatID, this.Collection, this.Data); !ok {
+			if ok , err := models.MgoUpdate("applicant.user.wechatid", this.Data.WechatID, this.Collection, this.Data); !ok {
 				logging.Warn("Update applicant status:", err)
 				return false
 			}
@@ -78,6 +78,10 @@ func (this *S_Apply) UpdateStatus() (bool) {
 
 		// 判断为退款请求, 发起退款申请
 		if statusCode == models.Refunded {
+			if ok, err := weixin.WXPayRefund(this.Data.PayOrder); !ok {
+				logging.Error("订单%s, 退款失败. %s", this.Data.PayOrder, err)
+			}
+
 
 		}
 
@@ -149,7 +153,6 @@ var title = map[string][]string {
 	"export" : []string{"编号", "申请证书", "申请人", "身份证号", "申请时间", "支付金额"},
 }
 func ExportFile(certid, act string) (string, error) {
-	fmt.Println(certid, " ", act)
 	code, ok := models.ActionMsg[act]
 	if !ok {
 		return "", nil

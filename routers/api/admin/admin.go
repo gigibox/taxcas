@@ -266,6 +266,7 @@ type parameters struct {
 	Action      string `json:"action"`
 	Pids        []string `json:"pids"`
 }
+
 // @Summary  执行审核结果
 // @Tags 	 后台管理
 // @Security ApiKeyAuth
