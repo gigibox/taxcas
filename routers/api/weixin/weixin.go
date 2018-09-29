@@ -214,7 +214,6 @@ func WXPayCallback(c *gin.Context) {
 			applyService.Data.ApplyStatus = models.Pending
 			applyService.Data.PayStatus = models.Paid
 			applyService.Data.ApplyStatusMsg = models.StatusMsg[models.Paid]
-			applyService.Data.WechatID = mr.Openid
 			applyService.UpdateStatus()
 
 			ms.Return_code = "SUCCESS"

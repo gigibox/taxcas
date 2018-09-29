@@ -63,19 +63,11 @@ func (this *S_Apply) UpdateStatus() (bool) {
 		statusCode := this.Data.ApplyStatus
 
 		// 根据身份证号 更新申请订单状态
-		if this.Data.PersonalID != "" {
-			if ok , err := models.MgoUpdate("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data); !ok {
-				logging.Warn("Update applicant status:", err)
-				return false
-			}
-		} else if this.Data.WechatID != "" {
-			if ok , err := models.MgoUpdate("applicant.user.wechatid", this.Data.WechatID, this.Collection, this.Data); !ok {
-				logging.Warn("Update applicant status:", err)
-				return false
-			}
-		} else {
+		if ok , err := models.MgoUpdate("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data); !ok {
+			logging.Warn("Update applicant status:", err)
 			return false
 		}
+
 
 		// 判断为退款请求, 发起退款申请
 		if statusCode == models.Refunded {
