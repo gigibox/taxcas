@@ -59,6 +59,13 @@ func GetAllCertName() (interface{}) {
 	return certs
 }
 
+func GetCertsList() (interface{}) {
+	result := []models.C_certs{}
+
+	models.MgoFindAll(col_certs, &result)
+	return result
+}
+
 func CheckExistByID(id string) (bool, error) {
 	result := models.C_certs{}
 	return models.MgoCheckKeyExist("certid", id, col_certs, &result)

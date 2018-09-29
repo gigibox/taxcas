@@ -44,7 +44,7 @@ func InitRouter() *gin.Engine {
 		// 获取openid
 		public.GET("/weixin/openid/:code", weixin.WXGetOpenID)
 
-		public.GET("/e-certs", admin.GetCertList)
+		public.GET("/e-certs", admin.GetCertsName)
 		public.GET("/e-certs/:certid/:id", admin.OfficialWebsite)
 	}
 
@@ -55,7 +55,7 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/admin/fonts", admin.GetFonts)
 
 		// 获取证书列表
-		apiv1.GET("/admin/certs", admin.GetCertList)
+		apiv1.GET("/admin/certs", admin.GetCertsList)
 
 		// 添加证书
 		apiv1.POST("/admin/certs", admin.AddCert)
@@ -81,8 +81,8 @@ func InitRouter() *gin.Engine {
 		// 修改密码
 		apiv1.PUT("/admin/password", admin.ChangePassword)
 
-		// 身份证号查询证书
-		public.GET("/admin/images/certs/:certid/:pid", admin.UserCertificates)
+		// 查看证书
+		apiv1.GET("/admin/images/certs/:certid/:openid", admin.UserCertificates)
 	}
 
 	// 用户端接口
@@ -94,7 +94,7 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/weixin/users/:openid", user.GetUserInfo)
 
 		// 查询证书
-		apiv1.GET("/weixin/certs", admin.GetCertList)
+		apiv1.GET("/weixin/certs", admin.GetCertsList)
 
 		// 获取支付订单
 		apiv1.GET("/weixin/wxorder/:openid/:certid", weixin.WXPayUnifyOrderReq)
@@ -115,7 +115,7 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("weixin/wxtext/:openid", weixin.WXSendText)
 
 		// 查看证书
-		apiv1.GET("/weixin/e-certs/:certid/:wechatid", admin.UserCertificates)
+		apiv1.GET("/weixin/e-certs/:certid/:openid", admin.UserCertificates)
 	}
 
 	return r

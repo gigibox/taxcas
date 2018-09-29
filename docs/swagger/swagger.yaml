@@ -149,8 +149,7 @@ paths:
     get:
       responses:
         "200":
-          description: 'data:{"image_save_path":"export/images/96a.jpg", "image_url":
-            "http://..."}'
+          description: '简单的证书信息, 仅包含ID 名称 '
           schema:
             $ref: '#/definitions/app.ResponseMsg'
             type: object
@@ -383,7 +382,7 @@ paths:
       summary: 预览证书
       tags:
       - 后台管理
-  /api/v1/admin/images/certs/{certid}/{pid}:
+  /api/v1/admin/images/certs/{certid}/{openid}:
     get:
       parameters:
       - description: 证书id
@@ -391,9 +390,9 @@ paths:
         name: certid
         required: true
         type: string
-      - description: 身份证号
+      - description: 用户微信id
         in: path
-        name: pid
+        name: openid
         required: true
         type: string
       responses:
@@ -490,7 +489,7 @@ paths:
             type: object
       summary: 查看用户证书
       tags:
-      - 开放接口
+      - 微信公众号
   /api/v1/weixin/openid/{code}:
     get:
       parameters:
@@ -509,6 +508,8 @@ paths:
       - 微信公众号
   /api/v1/weixin/users/{openid}:
     get:
+      description: '"申请状态 0:"未支付", 1:"已支付", 2: "待审核", 3: "审核中", 4:"已拒绝", 5:"已通过",
+        6:"退款中", 7:"已退款", 8:"错误状态""'
       parameters:
       - description: 用户openid
         in: path

@@ -79,14 +79,14 @@ func ApplyForCert(c *gin.Context) {
 	// 同一微信号只能申请一次
 	if isApplied, err := applyService.CheckApplyExistByWX(); !isApplied {
 		logging.Warn(err)
-		appG.Response(http.StatusConflict, false, e.ERROR_EXIST_APPLY, err)
+		appG.Response(http.StatusOK, false, e.ERROR_EXIST_APPLY, err)
 		return
 	}
 
 	// 同一个身份证只能申请一次
 	if isApplied, err := applyService.CheckApplyExistByID(); !isApplied {
 		logging.Warn(err)
-		appG.Response(http.StatusConflict, false, e.ERROR_EXIST_APPLY, err)
+		appG.Response(http.StatusOK, false, e.ERROR_EXIST_APPLY, err)
 		return
 	}
 
@@ -106,6 +106,7 @@ func ApplyForCert(c *gin.Context) {
 // @Summary 查询用户
 // @Tags 	微信公众号
 // @Security ApiKeyAuth
+// @Description "申请状态 0:"未支付", 1:"已支付", 2: "待审核", 3: "审核中", 4:"已拒绝", 5:"已通过", 6:"退款中", 7:"已退款", 8:"错误状态""
 // @Param   openid path string true "用户openid"
 // @Success 200 {object} app.ResponseMsg "用户基本信息 及 证书申领状态 ["申请证书id" : "申请状态"]"
 // @Router  /api/v1/weixin/users/{openid} [get]
@@ -123,15 +124,4 @@ func GetUserInfo(c *gin.Context) {
 	}
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, user)
-}
-
-// @Summary 	获取证书列表
-// @Tags 		微信公众号
-// @Security	ApiKeyAuth
-// @Description 查询所有证书列表
-// @Produce  	json
-// @Success 	200 {object} app.ResponseMsg "data:[{"cert_id":"0", "cert_name":"证书1", "status":"enable"}]"
-// @Router 		/api/v1/weixin/certs [get]
-func GetCertList(c *gin.Context) {
-
 }

@@ -23,9 +23,9 @@ import (
 // @Produce  	json
 // @Success 	200 {object} app.ResponseMsg "data:[{"cert_id":"0", "cert_name":"证书1", "status":"enable"}]"
 // @Router 		/api/v1/admin/certs [get]
-func GetCertList(c *gin.Context) {
+func GetCertsList(c *gin.Context) {
 	appG := app.Gin{c}
-	appG.Response(http.StatusOK, true, e.SUCCESS, cert_service.GetAllCertName())
+	appG.Response(http.StatusOK, true, e.SUCCESS, cert_service.GetCertsList())
 }
 
 // @Summary 	查询证书申领信息
@@ -262,9 +262,9 @@ func ExportApplicants(c *gin.Context) {
 }
 
 type parameters struct {
-	FilePath	string `json:"file_path"`
-	Action		string `json:"action"`
-	Pids	[]string `json:"pids"`
+	FilePath    string `json:"file_path"`
+	Action      string `json:"action"`
+	Pids        []string `json:"pids"`
 }
 // @Summary  执行审核结果
 // @Tags 	 后台管理
@@ -303,25 +303,22 @@ func UpdateApplicants(c *gin.Context) {
 // @Summary 查看用户证书
 // @Tags 	后台管理
 // @Param   certid path string true "证书id"
-// @Param   pid path string true "身份证号"
+// @Param   openid path string true "用户微信id"
 // @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
-// @Router  /api/v1/admin/images/certs/{certid}/{pid} [get]
+// @Router  /api/v1/admin/images/certs/{certid}/{openid} [get]
 func UserCertificates(c *gin.Context) {
 	appG := app.Gin{c}
 
 	certid := c.Param("certid")
-	pid := c.Param("pid")
 	openid := c.Param("openid")
 
 	apply := models.C_Apply{}
-	if pid != "" {
-		apply_service.GetApplyByPID(certid, pid, &apply)
-	} else if openid != "" {
-		apply_service.GetApplyByOpenid(certid, pid, &apply)
-	} else {
+	if certid == "" || openid== ""{
 		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, nil)
 		return
 	}
+
+	apply_service.GetApplyByOpenid(certid, openid, &apply)
 
 	if apply.SerialNumber == "" || apply.ApplyStatus != models.Passed {
 		appG.Response(http.StatusOK, false, e.ERROR_GET_USER_CERT_IMAGES, nil)
@@ -355,7 +352,7 @@ func OfficialWebsite(c *gin.Context) {
 	apply := models.C_Apply{}
 	if len(id) == 18 {
 		apply_service.GetApplyByPID(certid, id, &apply)
-	} else if len(id) == 12 {
+	} else if len(id) == 14 {
 		apply_service.GetApplyBySN(certid, id, &apply)
 	} else {
 		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, nil)
@@ -392,8 +389,18 @@ func OfficialWebsite(c *gin.Context) {
 	})
 }
 
-// @Summary 查看用户证书
+// @Summary 查询证书列表
 // @Tags 	开放接口
+// @Success 200 {object} app.ResponseMsg "简单的证书信息, 仅包含ID 名称 "
+// @Router  /api/e-certs [get]
+func GetCertsName(c *gin.Context) {
+	appG := app.Gin{c}
+	appG.Response(http.StatusOK, true, e.SUCCESS, cert_service.GetAllCertName())
+}
+
+
+// @Summary 查看用户证书
+// @Tags 	微信公众号
 // @Param   certid path string true "证书id"
 // @Param   openid path string true "用户微信id"
 // @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
@@ -401,10 +408,13 @@ func OfficialWebsite(c *gin.Context) {
 func swagger_a(c *gin.Context) {
 }
 
-// @Summary 查询证书列表
-// @Tags 	开放接口
-// @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
-// @Router  /api/e-certs [get]
-func swagger_b() {
+// @Summary 	获取证书列表
+// @Tags 		微信公众号
+// @Security	ApiKeyAuth
+// @Description 查询所有证书列表
+// @Produce  	json
+// @Success 	200 {object} app.ResponseMsg "data:[{"cert_id":"0", "cert_name":"证书1", "status":"enable"}]"
+// @Router 		/api/v1/weixin/certs [get]
+func swagger_c(c *gin.Context) {
 
 }
