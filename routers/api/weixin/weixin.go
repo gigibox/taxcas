@@ -85,6 +85,7 @@ func WXGetOpenID(c *gin.Context) {
 
 // @Summary 获取支付订单
 // @Tags 	微信公众号
+// @Security ApiKeyAuth
 // @Param   openid path string true "用户 openid"
 // @Param   certid path string true "证书 id"
 // @Success 200 {string} json "{"prepay_id":string}"
@@ -227,11 +228,6 @@ func WXPayCallback(c *gin.Context) {
 	c.XML(http.StatusOK, ms)
 }
 
-// @Summary 申请退款
-// @Tags 	微信公众号
-// @Param   out_trade_no path string true "付款订单号"
-// @Success 200 {string} json "{"msg":string, "extra":}"
-// @Router  /api/v1/weixin/wxrefund/{out_trade_no} [get]
 func WXPayRefund(out_trade_no string) (bool, error) {
 	out_refund_no := UniqueId()
 	//通过订单号去支付成功的数据库表中查找是否有此订单，并取出相应的total_fee,设置refund_fee
@@ -264,9 +260,11 @@ func WXPayRefund(out_trade_no string) (bool, error) {
 
 // @Summary 查询退款
 // @Tags 	微信公众号
-// @Param   out_trade_no path string true "付款订单号"
+// @Security ApiKeyAuth
+// @Param   openid path string true "用户openid"
+// @Param   certid path string true "证书id"
 // @Success 200 {string} json "{"msg":string, "extra":}"
-// @Router  /api/v1/weixin/wxquery/{out_trade_no} [get]
+// @Router  /api/v1/weixin/wxquery/{openid}/{certid} [get]
 func WXPayRefundQuery(c *gin.Context) {
 	appG := app.Gin{c}
 	openid := c.Param("openid")

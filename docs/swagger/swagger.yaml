@@ -569,15 +569,22 @@ paths:
           description: '{"prepay_id":string}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: 获取支付订单
       tags:
       - 微信公众号
-  /api/v1/weixin/wxquery/{out_trade_no}:
+  /api/v1/weixin/wxquery/{openid}/{certid}:
     get:
       parameters:
-      - description: 付款订单号
+      - description: 用户openid
         in: path
-        name: out_trade_no
+        name: openid
+        required: true
+        type: string
+      - description: 证书id
+        in: path
+        name: certid
         required: true
         type: string
       responses:
@@ -585,23 +592,9 @@ paths:
           description: '{"msg":string, "extra":}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: 查询退款
-      tags:
-      - 微信公众号
-  /api/v1/weixin/wxrefund/{out_trade_no}:
-    get:
-      parameters:
-      - description: 付款订单号
-        in: path
-        name: out_trade_no
-        required: true
-        type: string
-      responses:
-        "200":
-          description: '{"msg":string, "extra":}'
-          schema:
-            type: string
-      summary: 申请退款
       tags:
       - 微信公众号
 securityDefinitions:

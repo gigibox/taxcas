@@ -672,6 +672,11 @@
         },
         "/api/v1/weixin/wxorder/{openid}/{certid}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "tags": [
                     "微信公众号"
                 ],
@@ -702,8 +707,13 @@
                 }
             }
         },
-        "/api/v1/weixin/wxquery/{out_trade_no}": {
+        "/api/v1/weixin/wxquery/{openid}/{certid}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "tags": [
                     "微信公众号"
                 ],
@@ -711,33 +721,15 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "付款订单号",
-                        "name": "out_trade_no",
+                        "description": "用户openid",
+                        "name": "openid",
                         "in": "path",
                         "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"msg\":string, \"extra\":}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/weixin/wxrefund/{out_trade_no}": {
-            "get": {
-                "tags": [
-                    "微信公众号"
-                ],
-                "summary": "申请退款",
-                "parameters": [
+                    },
                     {
                         "type": "string",
-                        "description": "付款订单号",
-                        "name": "out_trade_no",
+                        "description": "证书id",
+                        "name": "certid",
                         "in": "path",
                         "required": true
                     }

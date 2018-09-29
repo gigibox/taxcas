@@ -40,9 +40,6 @@ func InitRouter() *gin.Engine {
 			public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}
 
-		// 获取openid
-		public.GET("/weixin/openid/:code", weixin.WXGetOpenID)
-
 		public.GET("/e-certs", admin.GetCertsName)
 		public.GET("/e-certs/:certid/:id", admin.OfficialWebsite)
 	}
@@ -101,8 +98,11 @@ func InitRouter() *gin.Engine {
 		// 获取支付订单
 		apiv1.GET("/weixin/wxorder/:openid/:certid", weixin.WXPayUnifyOrderReq)
 
+		// 获取openid
+		public.GET("/weixin/openid/:code", weixin.WXGetOpenID)
+
 		// 微信服务端回调
-		apiv1.POST("weixin/wxnotify", weixin.WXPayCallback)
+		public.POST("weixin/wxnotify", weixin.WXPayCallback)
 
 		// 申请退款
 		//apiv1.GET("weixin/wxrefund/:out_trade_no", weixin.WXPayRefund)

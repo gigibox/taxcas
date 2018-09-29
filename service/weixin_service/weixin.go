@@ -46,11 +46,6 @@ func UniqueId() string {
         return GetMd5String(base64.URLEncoding.EncodeToString(b))
 }
 
-// @Summary 申请退款
-// @Tags        微信公众号
-// @Param   out_trade_no path string true "付款订单号"
-// @Success 200 {string} json "{"msg":string, "extra":}"
-// @Router  /api/v1/weixin/wxrefund/{out_trade_no} [get]
 func WXPayRefund(out_trade_no string) (bool, error) {
         out_refund_no := UniqueId()
         //通过订单号去支付成功的数据库表中查找是否有此订单，并取出相应的total_fee,设置refund_fee

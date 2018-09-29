@@ -68,7 +68,6 @@ func (this *S_Apply) UpdateStatus() (bool) {
 			return false
 		}
 
-
 		// 判断为退款请求, 发起退款申请
 		if statusCode == models.Refunded {
 			if ok, err := weixin_service.WXPayRefund(this.Data.PayOrder); !ok {
