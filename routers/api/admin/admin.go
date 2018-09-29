@@ -42,10 +42,10 @@ func GetCertsList(c *gin.Context) {
 func GetApplicantList(c *gin.Context) {
 	appG := app.Gin{c}
 
-	id		:= c.Param("certid")
-	act		:= c.Param("type")
-	page 	:= com.StrTo(c.Query("page")).MustInt()
-	limit	:= com.StrTo(c.Query("limit")).MustInt()
+	id    := c.Param("certid")
+	act   := c.Query("type")
+	page  := com.StrTo(c.Query("page")).MustInt()
+	limit := com.StrTo(c.Query("limit")).MustInt()
 
 	if notExist, _ := cert_service.CheckExistByID(id); notExist {
 		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
@@ -163,12 +163,12 @@ func UploadImage(c *gin.Context) {
 
 	file, image, err := c.Request.FormFile("image")
 	if err != nil {
-		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, err)
+		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
 		return
 	}
 
 	if image == nil {
-		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, nil)
+		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, nil)
 		return
 	}
 
@@ -176,13 +176,13 @@ func UploadImage(c *gin.Context) {
 	fullPath  := upload.GetImageFullPath()
 
 	if !upload.CheckImageExt(imageName) || !upload.CheckFileSize(file) {
-		appG.Response(http.StatusRequestEntityTooLarge, false, e.ERROR_UPLOAD_CHECK_IMAGE_FORMAT, nil)
+		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_CHECK_IMAGE_FORMAT, nil)
 		return
 	}
 
 	if err := c.SaveUploadedFile(image, fullPath + imageName); err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_UPLOAD_SAVE_IMAGE_FAIL, err)
+		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_SAVE_IMAGE_FAIL, err)
 		return
 	}
 
@@ -203,12 +203,12 @@ func UploadExcel(c *gin.Context) {
 
 	file, excel, err := c.Request.FormFile("excel")
 	if err != nil {
-		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, err)
+		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, err)
 		return
 	}
 
 	if excel == nil {
-		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, nil)
+		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, nil)
 		return
 	}
 
@@ -216,13 +216,13 @@ func UploadExcel(c *gin.Context) {
 	fullPath := upload.GetExcelFullPath()
 
 	if !upload.CheckExcelExt(saveName) || !upload.CheckFileSize(file) {
-		appG.Response(http.StatusRequestEntityTooLarge, false, e.ERROR_UPLOAD_CHECK_FILE_FORMAT, nil)
+		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_CHECK_FILE_FORMAT, nil)
 		return
 	}
 
 	if err := c.SaveUploadedFile(excel, fullPath + saveName); err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_UPLOAD_SAVE_FILE_FAIL, err)
+		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_SAVE_FILE_FAIL, err)
 		return
 	}
 
@@ -251,7 +251,7 @@ func ExportApplicants(c *gin.Context) {
 
 	filename, _ := apply_service.ExportFile(certid, c.Query("type"))
 	if filename == "" {
-		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_EXPORT_FILE_FAIL, nil)
+		appG.Response(http.StatusOK, false, e.ERROR_EXPORT_FILE_FAIL, nil)
 		return
 	}
 

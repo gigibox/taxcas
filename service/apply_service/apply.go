@@ -266,6 +266,7 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 			applyService.Data.ApplyStatusMsg = statusMsg
 			if statusCode == models.Refunded {
 				applyService.Data.PayTime = time.Now().Unix()
+				applyService.Data.PayStatus = statusCode
 			}
 
 			if ok := applyService.UpdateStatus(); ok {
@@ -280,6 +281,11 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 			GetApplyByPID(certid, pids[i], &applyService.Data)
 			applyService.Data.ApplyStatus = statusCode
 			applyService.Data.ApplyStatusMsg = statusMsg
+			if statusCode == models.Refunded {
+				applyService.Data.PayTime = time.Now().Unix()
+				applyService.Data.PayStatus = statusCode
+			}
+
 			if ok := applyService.UpdateStatus(); ok {
 				succeed ++
 			} else {
