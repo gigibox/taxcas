@@ -122,7 +122,7 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 		params := make(wxpay.Params)
 		params.SetString("body", result.CertName).
 			SetString("out_trade_no", out_trade_no).
-			SetInt64("total_fee", int64(price)).
+			SetInt64("total_fee", int64(price*100)).
 			SetString("spbill_create_ip", ip).
 			SetString("notify_url", setting.WeixinSetting.Notify_url).
 			SetString("openid", openid).
@@ -139,7 +139,7 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 		appG.Response(http.StatusOK, true, e.SUCCESS, map[string]interface{}{
 			"prepay_id": prepay_id,
 			"appid":     appid,
-			"price":     price,
+			"price":     price * 100,
 			"apikey":    setting.WeixinSetting.ApiKey,
 			"orderid":   out_trade_no,
 			"name":      result.CertName,
