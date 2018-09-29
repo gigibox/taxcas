@@ -229,9 +229,7 @@ func WXPayCallback(c *gin.Context) {
 // @Param   out_trade_no path string true "付款订单号"
 // @Success 200 {string} json "{"msg":string, "extra":}"
 // @Router  /api/v1/weixin/wxrefund/{out_trade_no} [get]
-func WXPayRefund(c *gin.Context) {
-	appG := app.Gin{c}
-	out_trade_no := c.Param("out_trade_no")
+func WXPayRefund(out_trade_no string) (bool, error) {
 	out_refund_no := UniqueId()
 	//通过订单号去支付成功的数据库表中查找是否有此订单，并取出相应的total_fee,设置refund_fee
 
@@ -241,10 +239,10 @@ func WXPayRefund(c *gin.Context) {
 	result := models.WXPayNotifyReq{}
 	isExist, err := models.MgoFindOne("out_trade_no", out_trade_no, weixin_service.Col_order, &result)
 	if err != nil {
-		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT_FAIL, nil)
+		return false, err
 	}
 	if isExist == false {
-		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
+		return false, "error"
 	}
 
 	client := wxpay.NewClient(account)
@@ -256,10 +254,9 @@ func WXPayRefund(c *gin.Context) {
 
 	p, err := client.Refund(params)
 	if err != nil {
-		appG.Response(http.StatusOK, false, e.SUCCESS, err)
+		return false, err
 	}
-	//更新退款成功的数据库表，记录退款成功状态
-	appG.Response(http.StatusOK, true, e.SUCCESS, p)
+	return true, nil
 }
 
 // @Summary 查询退款
@@ -491,18 +488,14 @@ type TextMsgContent struct {
 	Content string `json:"content"`
 }
 
-func WXSendText(c *gin.Context) {
-	appG := app.Gin{c}
-	openid := c.Param("openid")
-
+func WXSendText(openid, msg string) (bool, error) {
 	accessToken := getAccessToken()
-	msg := "你好" + "\U0001f604"
 	err := pushCustomMsg(accessToken, openid, msg)
 	if err != nil {
 		fmt.Println("Push custom service message err:", err)
-		return
+		return false, err
 	}
-	appG.Response(http.StatusOK, true, e.SUCCESS, "SUCCESS")
+	return true, nil
 }
 
 func pushCustomMsg(accessToken, toUser, msg string) error {
