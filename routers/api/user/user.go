@@ -103,7 +103,7 @@ func ApplyForCert(c *gin.Context) {
 	appG.Response(http.StatusCreated, isAdded, e.SUCCESS, err)
 }
 
-// @Summary 查询用户
+// @Summary 查询用户信息
 // @Tags 	微信公众号
 // @Security ApiKeyAuth
 // @Description "申请状态 0:"未支付", 1:"已支付", 2: "待审核", 3: "审核中", 4:"已拒绝", 5:"已通过", 6:"退款中", 7:"已退款", 8:"错误状态""
@@ -124,4 +124,27 @@ func GetUserInfo(c *gin.Context) {
 	}
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, user)
+}
+
+// @Summary 查询申领信息
+// @Tags 	微信公众号
+// @Security ApiKeyAuth
+// @Param   certid path string true "证书id"
+// @Param   openid path string true "用户openid"
+// @Success 200 {object} app.ResponseMsg "用户申请证书所提交的所有信息"
+// @Router  /api/v1/weixin/applicants/users/{certid}/{openid} [get]
+func GetApplicant(c *gin.Context) {
+	appG := app.Gin{c}
+
+	certid := c.Param("certid")
+	openid := c.Param("openid")
+
+	apply := models.C_Apply{}
+
+	if apply_service.GetApplyByOpenid(certid, openid, &apply); apply.SerialNumber == "" {
+		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_USER, nil)
+		return
+	}
+
+	appG.Response(http.StatusOK, true, e.SUCCESS, apply)
 }

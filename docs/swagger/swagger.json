@@ -516,6 +516,44 @@
                 }
             }
         },
+        "/api/v1/weixin/applicants/users/{certid}/{openid}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "微信公众号"
+                ],
+                "summary": "查询申领信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "证书id",
+                        "name": "certid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户openid",
+                        "name": "openid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "用户申请证书所提交的所有信息",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/app.ResponseMsg"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/weixin/certs": {
             "get": {
                 "security": [
@@ -611,7 +649,7 @@
                 "tags": [
                     "微信公众号"
                 ],
-                "summary": "查询用户",
+                "summary": "查询用户信息",
                 "parameters": [
                     {
                         "type": "string",

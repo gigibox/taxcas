@@ -451,6 +451,30 @@ paths:
       summary: 申请证书
       tags:
       - 微信公众号
+  /api/v1/weixin/applicants/users/{certid}/{openid}:
+    get:
+      parameters:
+      - description: 证书id
+        in: path
+        name: certid
+        required: true
+        type: string
+      - description: 用户openid
+        in: path
+        name: openid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: 用户申请证书所提交的所有信息
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 查询申领信息
+      tags:
+      - 微信公众号
   /api/v1/weixin/certs:
     get:
       description: 查询所有证书列表
@@ -524,7 +548,7 @@ paths:
             type: object
       security:
       - ApiKeyAuth: []
-      summary: 查询用户
+      summary: 查询用户信息
       tags:
       - 微信公众号
   /api/v1/weixin/wxorder/{openid}/{certid}:

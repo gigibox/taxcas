@@ -5,7 +5,6 @@ import (
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"net/http"
 	"taxcas/middleware/cors"
-	"taxcas/middleware/jwt"
 	"taxcas/routers/api/admin"
 	"taxcas/routers/api/user"
 	"taxcas/routers/api/weixin"
@@ -49,7 +48,7 @@ func InitRouter() *gin.Engine {
 	}
 
 	apiv1 := r.Group("/api/v1")
-	apiv1.Use(jwt.JWT())
+	//apiv1.Use(jwt.JWT())
 	{
 		// 获取字体
 		apiv1.GET("/admin/fonts", admin.GetFonts)
@@ -90,10 +89,13 @@ func InitRouter() *gin.Engine {
 		// 申请证书
 		apiv1.POST("/weixin/applicants/users", user.ApplyForCert)
 
-		// 查询用户
+		// 查询申领信息
+		apiv1.GET("/weixin/applicants/users/:certid/:openid", user.GetApplicant)
+
+		// 查询用户信息
 		apiv1.GET("/weixin/users/:openid", user.GetUserInfo)
 
-		// 查询证书
+		// 查询证书列表
 		apiv1.GET("/weixin/certs", admin.GetCertsList)
 
 		// 获取支付订单
