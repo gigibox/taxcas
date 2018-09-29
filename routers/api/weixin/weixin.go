@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/objcoding/wxpay"
@@ -25,7 +26,6 @@ import (
 	"taxcas/service/apply_service"
 	"taxcas/service/weixin_service"
 	"time"
-	//	"errors"
 )
 
 // @Summary 获取用户openid
@@ -242,7 +242,7 @@ func WXPayRefund(out_trade_no string) (bool, error) {
 		return false, err
 	}
 	if isExist == false {
-		return false, "error"
+		return false, errors.New("此订单不存在")
 	}
 
 	client := wxpay.NewClient(account)
@@ -252,7 +252,7 @@ func WXPayRefund(out_trade_no string) (bool, error) {
 		SetInt64("total_fee", int64(result.Total_fee)).
 		SetInt64("refund_fee", int64(result.Total_fee))
 
-	p, err := client.Refund(params)
+	_, err = client.Refund(params)
 	if err != nil {
 		return false, err
 	}
