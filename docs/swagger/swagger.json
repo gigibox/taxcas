@@ -160,6 +160,13 @@
                 "summary": "执行审核结果",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "证书id",
+                        "name": "certid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
                         "description": "file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝), pids[]: 选中的记录",
                         "name": "data",
                         "in": "body",

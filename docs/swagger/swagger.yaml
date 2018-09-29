@@ -216,6 +216,11 @@ paths:
       - 后台管理
     put:
       parameters:
+      - description: 证书id
+        in: path
+        name: certid
+        required: true
+        type: string
       - description: 'file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝),
           pids[]: 选中的记录'
         in: body
