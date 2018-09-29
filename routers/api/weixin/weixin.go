@@ -1,7 +1,6 @@
 package weixin
 
 import (
-	//	"bytes"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
@@ -14,7 +13,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	//	"os"
+	"time"
+
 	"sort"
 	"strings"
 	"taxcas/models"
@@ -25,7 +25,6 @@ import (
 	"taxcas/pkg/util"
 	"taxcas/service/apply_service"
 	"taxcas/service/weixin_service"
-	//	"time"
 )
 
 // @Summary 获取用户openid
