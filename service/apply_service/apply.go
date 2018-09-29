@@ -214,7 +214,7 @@ func ExportFile(certid, act string) (string, error) {
 	// 更新用户表状态
 	for i := range docs {
 		user := models.User{
-			PersonalID : docs[i].PersonalID,
+			WechatID : docs[i].WechatID,
 		}
 		user_service.UpdateCerts(user, certid, newCode)
 	}
