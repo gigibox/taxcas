@@ -126,6 +126,7 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 			SetString("spbill_create_ip", ip).
 			SetString("notify_url", setting.WeixinSetting.Notify_url).
 			SetString("openid", openid).
+			SetString("attach", certid).
 			SetString("trade_type", "JSAPI")
 
 		p, err := client.UnifiedOrder(params)
@@ -203,6 +204,15 @@ func WXPayCallback(c *gin.Context) {
 			fmt.Println("写数据库失败")
 		}
 		if result {
+			applyService := apply_service.S_Apply{
+				Collection: "cert" + mr.Attach + "_apply",
+			}
+			applyService.Data.ApplyStatus = models.Pending
+			applyService.Data.PayStatus = models.Paid
+			applyService.Data.ApplyStatusMsg = models.StatusMsg[models.Paid]
+			applyService.Data.WechatID = mr.Openid
+			applyService.UpdateStatus()
+
 			ms.Return_code = "SUCCESS"
 			ms.Return_msg = "OK"
 		}
