@@ -234,17 +234,7 @@ func WXPayRefund(c *gin.Context) {
 // @Router  /api/v1/weixin/wxquery/{out_trade_no} [get]
 func WXPayRefundQuery(c *gin.Context) {
 	appG := app.Gin{c}
-	openID := c.Param("openid")
-	certID := c.Param("certid")
-
-	result := models.C_Apply{}
-	isExist, err := models.MgoFindOne("out_trade_no", out_trade_no, weixin_service.Col_order, &result)
-	if err != nil {
-		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT_FAIL, nil)
-	}
-	if isExist == false {
-		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
-	}
+	out_trade_no := c.Param("out_trade_no")
 
 	client := wxpay.NewClient(wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeixinSetting.MchID, setting.WeixinSetting.ApiKey, false))
 	params := make(wxpay.Params)
