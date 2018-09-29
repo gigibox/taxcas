@@ -209,6 +209,8 @@ func WXPayCallback(c *gin.Context) {
 			applyService := apply_service.S_Apply{
 				Collection: "cert" + mr.Attach + "_apply",
 			}
+
+			apply_service.GetApplyByOpenid(mr.Attach, mr.Openid, &applyService.Data)
 			applyService.Data.ApplyStatus = models.Pending
 			applyService.Data.PayStatus = models.Paid
 			applyService.Data.ApplyStatusMsg = models.StatusMsg[models.Paid]
