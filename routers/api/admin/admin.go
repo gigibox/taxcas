@@ -123,10 +123,10 @@ func PreviewImage(c *gin.Context) {
 		return
 	}
 
-	t := models.GlobalDesigner
-	t.ImgName = design.ImgName
+	//t := models.GlobalDesigner
+	//t.ImgName = design.ImgName
 
-	image, err := cert_service.GetCertImage(&t, nil)
+	image, err := cert_service.GetCertImage(&design, nil)
 	if err != nil {
 		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_UPLOAD_CREATE_IMAGE_FAIL, nil)
 
