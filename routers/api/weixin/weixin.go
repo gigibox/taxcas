@@ -22,6 +22,7 @@ import (
 	"taxcas/pkg/setting"
 	"taxcas/pkg/upload"
 	"taxcas/pkg/util"
+	"taxcas/service/apply_service"
 	"taxcas/service/weixin_service"
 	"time"
 	//	"errors"
@@ -234,7 +235,17 @@ func WXPayRefund(c *gin.Context) {
 // @Router  /api/v1/weixin/wxquery/{out_trade_no} [get]
 func WXPayRefundQuery(c *gin.Context) {
 	appG := app.Gin{c}
-	out_trade_no := c.Param("out_trade_no")
+	openid := c.Param("openid")
+	certid := c.Param("certid")
+
+	result := models.C_Apply{}
+	apply_service.GetApplyByOpenid(certid, openid, &result)
+	if result == "" {
+		appG.Response(http.StatusOK, false, e.ERROR, nil)
+		return
+	}
+
+	out_trade_no := result.PayOrder
 
 	client := wxpay.NewClient(wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeixinSetting.MchID, setting.WeixinSetting.ApiKey, false))
 	params := make(wxpay.Params)
