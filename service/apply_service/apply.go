@@ -2,7 +2,9 @@ package apply_service
 
 import (
 	"encoding/csv"
+	"gopkg.in/mgo.v2/bson"
 	"io"
+	"log"
 	"os"
 	"strconv"
 	"taxcas/models"
@@ -203,13 +205,12 @@ func ExportFile(certid, act string) (string, error) {
 	newMsg := models.StatusMsg[newCode]
 
 	// 更新申请订单表
-	apply := models.C_Apply{
-		ApplyStatus: newCode,
-		ApplyStatusMsg: newMsg,
-	}
+	newData := bson.M{"$set": bson.M{"applystatus": newCode, "applystatusmsg": newMsg}}
 
 	// 一次更新所有状态
-	models.MgoUpdateAll(key, val, "cert" + certid + "_apply", apply)
+	if ok, err := models.MgoUpdateAll(key, val, "cert" + certid + "_apply", newData); !ok {
+		log.Println(err)
+	}
 
 	// 更新用户表状态
 	for i := range docs {
