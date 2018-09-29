@@ -215,7 +215,7 @@ func WXPayCallback(c *gin.Context) {
 			applyService.Data.PayTime = time.Now().Unix()
 			applyService.Data.ApplyStatus = models.Pending
 			applyService.Data.PayStatus = models.Paid
-			applyService.Data.ApplyStatusMsg = models.StatusMsg[models.Paid]
+			applyService.Data.ApplyStatusMsg = models.StatusMsg[models.Pending]
 			applyService.UpdateStatus()
 
 			ms.Return_code = "SUCCESS"
