@@ -221,8 +221,8 @@ paths:
         name: certid
         required: true
         type: string
-      - description: 'file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝),
-          pids[]: 选中的记录'
+      - description: 'file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝) |
+          Reject, pids[]: 选中的记录'
         in: body
         name: data
         required: true

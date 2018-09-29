@@ -235,10 +235,6 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 
 	applyService := S_Apply{
 		Collection: "cert" + certid + "_apply",
-		Data:models.C_Apply{
-			ApplyStatus: statusCode,
-			ApplyStatusMsg: statusMsg,
-		},
 	}
 
 	// 根据导入数据处理
@@ -266,6 +262,8 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 			}
 
 			GetApplyByPID(certid, record[3], &applyService.Data)
+			applyService.Data.ApplyStatus = statusCode
+			applyService.Data.ApplyStatusMsg = statusMsg
 			if ok := applyService.UpdateStatus(); ok {
 				succeed ++
 			} else {
@@ -276,13 +274,14 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 		// 手动选择
 		for i := range pids{
 			GetApplyByPID(certid, pids[i], &applyService.Data)
+			applyService.Data.ApplyStatus = statusCode
+			applyService.Data.ApplyStatusMsg = statusMsg
 			if ok := applyService.UpdateStatus(); ok {
 				succeed ++
 			} else {
 				failure ++
 			}
 		}
-
 	}
 
 	return succeed, failure

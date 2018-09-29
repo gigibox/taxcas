@@ -272,7 +272,7 @@ type parameters struct {
 // @Security ApiKeyAuth
 // @Produce  json
 // @Param    certid path string true "证书id"
-// @Param    data body admin.parameters true "file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝), pids[]: 选中的记录"
+// @Param    data body admin.parameters true "file_path: 导入的csv文件路径, action: passed(审核中) | refunded(已拒绝) | Reject, pids[]: 选中的记录"
 // @Success  200 {object} app.ResponseMsg "data:{""}"
 // @Router   /api/v1/admin/applicants/certs/{certid} [put]
 func UpdateApplicants(c *gin.Context) {
