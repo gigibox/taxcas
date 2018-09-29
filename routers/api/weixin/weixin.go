@@ -1,7 +1,7 @@
 package weixin
 
 import (
-	"bytes"
+//	"bytes"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
@@ -14,7 +14,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
+//	"os"
 	"sort"
 	"strings"
 	"taxcas/models"
@@ -25,7 +25,7 @@ import (
 	"taxcas/pkg/util"
 	"taxcas/service/apply_service"
 	"taxcas/service/weixin_service"
-	"time"
+//	"time"
 )
 
 // @Summary 获取用户openid
@@ -112,6 +112,7 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 		Collection: "cert" + certid + "_apply",
 	}
 
+	apply_service.GetApplyByOpenid(certid,openid,&applyService.Data)
 	// 收费证书
 	if price > 0 {
 		out_trade_no := UniqueId()
@@ -161,6 +162,7 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	// 更新状态
 	applyService.Data.WechatID = openid
 	applyService.UpdateStatus()
+	fmt.Println("lsdkjgdslj")
 	return
 }
 
@@ -352,7 +354,7 @@ func UniqueId() string {
 	return GetMd5String(base64.URLEncoding.EncodeToString(b))
 }
 
-type AccessToken struct {
+/*type AccessToken struct {
 	Token      string `json:"access_token"`
 	ExpiresIn  int    `json:"expires_in"`
 	CreateTime int64
@@ -409,7 +411,7 @@ func sendTmplete(openid, templateID, backUrl string) (string, error) {
 	url := "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + token
 	res, err := postReq(url, string(reqBody))
 	return res, err
-}
+}*/
 
 /**
 * @note 发起post请求
@@ -417,7 +419,7 @@ func sendTmplete(openid, templateID, backUrl string) (string, error) {
   * @params reqBody string 请求体
    * @return 请求响应
 */
-func postReq(url, reqBody string) (string, error) {
+/*func postReq(url, reqBody string) (string, error) {
 	//创建请求
 	req, err := http.NewRequest("POST", url, strings.NewReader(reqBody))
 
@@ -448,14 +450,14 @@ func postReq(url, reqBody string) (string, error) {
 	defer resp.Body.Close()
 
 	return string(body), nil
-}
+}*/
 
 /**
 * @note 获取微信的access_token
  * @params *accessToken 用来存放token的结构体
   * @return token string
 */
-func getAccessToken() string {
+/*func getAccessToken() string {
 	url := "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + setting.WeixinSetting.AppID + "&secret=" + setting.WeixinSetting.AppSecret
 	if accessToken == nil || (time.Now().Unix()-accessToken.CreateTime) > 7000 {
 		accessToken = new(AccessToken)
@@ -528,4 +530,4 @@ func pushCustomMsg(accessToken, toUser, msg string) error {
 	resp.Body.Close()
 
 	return nil
-}
+}*/
