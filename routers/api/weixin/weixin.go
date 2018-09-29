@@ -264,7 +264,7 @@ func WXPayRefundQuery(c *gin.Context) {
 
 	result := models.C_Apply{}
 	apply_service.GetApplyByOpenid(certid, openid, &result)
-	if result == "" {
+	if result.PayOrder == "" {
 		appG.Response(http.StatusOK, false, e.ERROR, nil)
 		return
 	}
