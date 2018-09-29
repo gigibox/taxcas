@@ -58,12 +58,21 @@ func (this *S_Apply) Add() (bool, error) {
 	return models.MgoInsert(this.Data, this.Collection)
 }
 
-func (this *S_Apply) UpdateStatus(certid string) (bool) {
+func (this *S_Apply) UpdateStatus() (bool) {
 		statusCode := this.Data.ApplyStatus
 
 		// 根据身份证号 更新申请订单状态
-		if ok , err := models.MgoUpsert("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data); !ok {
-			logging.Warn("Update applicant status:", err)
+		if this.Data.PersonalID != "" {
+			if ok , err := models.MgoUpsert("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data); !ok {
+				logging.Warn("Update applicant status:", err)
+				return false
+			}
+		} else if this.Data.WechatID != "" {
+			if ok , err := models.MgoUpsert("applicant.user.wechatid", this.Data.WechatID, this.Collection, this.Data); !ok {
+				logging.Warn("Update applicant status:", err)
+				return false
+			}
+		} else {
 			return false
 		}
 
@@ -76,7 +85,7 @@ func (this *S_Apply) UpdateStatus(certid string) (bool) {
 		user := models.User{
 			PersonalID : this.Data.PersonalID,
 		}
-		user_service.UpdateCerts(user, certid, this.Data.ApplyStatus)
+		user_service.UpdateCerts(user, this.Data.CertID, this.Data.ApplyStatus)
 
 		// 推送微信提醒
 
@@ -204,6 +213,7 @@ func ExportFile(certid, act string) (string, error) {
 		ApplyStatusMsg: newMsg,
 	}
 
+	// 一次更新所有状态
 	models.MgoUpdateAll(key, val, "cert" + certid + "_apply", apply)
 
 	// 更新用户表状态
@@ -260,7 +270,7 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 			}
 
 			applyService.Data.PersonalID = record[3]
-			if ok := applyService.UpdateStatus(certid); ok {
+			if ok := applyService.UpdateStatus(); ok {
 				succeed ++
 			} else {
 				failure ++
@@ -270,7 +280,7 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 		// 手动选择
 		for i := range pids{
 			applyService.Data.PersonalID = pids[i]
-			if ok := applyService.UpdateStatus(certid); ok {
+			if ok := applyService.UpdateStatus(); ok {
 				succeed ++
 			} else {
 				failure ++

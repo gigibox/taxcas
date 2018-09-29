@@ -77,7 +77,7 @@ func WXGetOpenID(c *gin.Context) {
 	fmt.Println("=======================")
 
 	// 返回token
-	c.Header("Authorization", util.GenerateToken("weixin", util.EncodeMD5(openid)))
+	c.Header("Authorization", util.GenerateToken("weixin", openid))
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
 		"openid": openid,
 	})
@@ -107,36 +107,60 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 	price := result.Price
 	fmt.Println(price)
 
-	out_trade_no := UniqueId()
-	fmt.Println(ip)
-	fmt.Println(result)
-
-	client := wxpay.NewClient(wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeixinSetting.MchID, setting.WeixinSetting.ApiKey, false))
-	params := make(wxpay.Params)
-	params.SetString("body", result.CertName).
-		SetString("out_trade_no", out_trade_no).
-		SetInt64("total_fee", int64(price)).
-		SetString("spbill_create_ip", ip).
-		SetString("notify_url", setting.WeixinSetting.Notify_url).
-		SetString("openid", openid).
-		SetString("trade_type", "JSAPI")
-
-	p, err := client.UnifiedOrder(params)
-	if err != nil {
-		appG.Response(http.StatusOK, false, e.INVALID_PARAMS, nil)
+	// 在申请订单中填写支付订单号
+	applyService := apply_service.S_Apply{
+		Collection: "cert" + certid + "_apply",
 	}
 
-	prepay_id := p.GetString("prepay_id")
-	appid := p.GetString("appid")
-	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]interface{}{
-		"prepay_id": prepay_id,
-		"appid":     appid,
-		"price":     price,
-		"apikey":    setting.WeixinSetting.ApiKey,
-		"orderid":   out_trade_no,
-		"name":      result.CertName,
-	})
-	//c.JSON(http.StatusOK, gin.H{"prepay_id": prepay_id, "appid": appid})
+	// 收费证书
+	if price > 0 {
+		out_trade_no := UniqueId()
+		fmt.Println(ip)
+		fmt.Println(result)
+
+		client := wxpay.NewClient(wxpay.NewAccount(setting.WeixinSetting.AppID, setting.WeixinSetting.MchID, setting.WeixinSetting.ApiKey, false))
+		params := make(wxpay.Params)
+		params.SetString("body", result.CertName).
+			SetString("out_trade_no", out_trade_no).
+			SetInt64("total_fee", int64(price)).
+			SetString("spbill_create_ip", ip).
+			SetString("notify_url", setting.WeixinSetting.Notify_url).
+			SetString("openid", openid).
+			SetString("trade_type", "JSAPI")
+
+		p, err := client.UnifiedOrder(params)
+		if err != nil {
+			appG.Response(http.StatusOK, false, e.INVALID_PARAMS, nil)
+		}
+
+		prepay_id := p.GetString("prepay_id")
+		appid := p.GetString("appid")
+		appG.Response(http.StatusOK, true, e.SUCCESS, map[string]interface{}{
+			"prepay_id": prepay_id,
+			"appid":     appid,
+			"price":     price,
+			"apikey":    setting.WeixinSetting.ApiKey,
+			"orderid":   out_trade_no,
+			"name":      result.CertName,
+		})
+
+		applyService.Data.ApplyStatus = models.NotPaid
+		applyService.Data.ApplyStatusMsg = models.StatusMsg[models.NotPaid]
+		applyService.Data.PayOrder = out_trade_no
+		applyService.Data.PayStatus = models.NotPaid
+	} else {
+		applyService.Data.ApplyStatus = models.Pending
+		applyService.Data.ApplyStatusMsg = models.StatusMsg[models.Pending]
+
+		appG.Response(http.StatusOK, true, e.SUCCESS, map[string]int{
+			"price": price,
+		})
+	}
+
+	// 更新状态
+	applyService.Data.WechatID = openid
+	applyService.UpdateStatus()
+	return
 }
 
 func WXPayCallback(c *gin.Context) {
