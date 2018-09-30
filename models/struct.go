@@ -113,18 +113,18 @@ type C_Apply struct {
 
 var GlobalDesigner = ImageDesigner{
 	Name: Coord{
-		Str:      "李雷",
+		Str:      "李 雷",
 		Font:     "微软雅黑",
 		FontSize: 20,
-		X:        260,
+		X:        265,
 		Y:        200,
 	},
 	EnglishName: Coord{
-		Str:      "LiLei",
+		Str:      "Li Lei",
 		Font:     "微软雅黑",
 		FontSize: 12,
-		X:        260,
-		Y:        270,
+		X:        265,
+		Y:        250,
 	},
 	PersonalID: Coord{
 		Str:      "110010201010010101",
@@ -137,14 +137,14 @@ var GlobalDesigner = ImageDesigner{
 		Str:      "20180914012345",
 		Font:     "微软雅黑",
 		FontSize: 10,
-		X:        200,
-		Y:        346,
+		X:        133,
+		Y:        640,
 	},
 	Date: Coord{
-		Str:      "2018 年 9 月 14 日",
+		Str:      "2018        9       14",
 		Font:     "微软雅黑",
 		FontSize: 10,
-		X:        390,
+		X:        392,
 		Y:        666,
 	},
 }
