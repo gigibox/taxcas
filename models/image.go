@@ -1,6 +1,8 @@
 package models
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"image"
@@ -132,12 +134,22 @@ func (this *Signer) drawStringImage(text string) (image.Image, error) {
 }
 
 func SignImage(imagePath string,  design *ImageDesigner) (error) {
+	/*
 	srcImage, err := os.Open(setting.AppSetting.RuntimeRootPath + design.ImgName)
 	if err != nil {
 		logging.Warn(err)
 		return err
 	}
 	defer srcImage.Close()
+	*/
+
+	byteBuff, err := ioutil.ReadFile(setting.AppSetting.RuntimeRootPath + design.ImgName)
+	if err != nil{
+		fmt.Printf("%s\n",err)
+		panic(err)
+	}
+
+	srcImage := bytes.NewReader(byteBuff)
 
 	saveImage, err := os.OpenFile(setting.AppSetting.RuntimeRootPath + imagePath,  os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
