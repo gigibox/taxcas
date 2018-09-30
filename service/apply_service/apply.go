@@ -40,7 +40,7 @@ func (this *S_Apply) CheckApplyStatus() (bool, error) {
 	result := models.C_certs{}
 	models.MgoCheckKeyExist("certname", this.Data.CertName, "certs", &result)
 
-	if result.Status == "enable" {
+	if result.Status == "enabled" {
 		return true, nil
 	}
 
