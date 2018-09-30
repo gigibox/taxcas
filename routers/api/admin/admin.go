@@ -140,10 +140,13 @@ func EditCert(c *gin.Context) {
 		return
 	}
 
+	n := cert.ImageDesign.ImgName
+	cert.ImageDesign = models.GlobalDesigner
+	cert.ImageDesign.ImgName = n
 	certService := cert_service.S_cert{Collection: "certs", Data: cert}
 	ok, err := certService.Edit()
 
-	appG.Response(http.StatusCreated, ok, e.SUCCESS, err)
+	appG.Response(http.StatusOK, ok, e.SUCCESS, err)
 }
 
 // @Summary 预览证书

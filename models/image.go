@@ -134,15 +134,6 @@ func (this *Signer) drawStringImage(text string) (image.Image, error) {
 }
 
 func SignImage(imagePath string,  design *ImageDesigner) (error) {
-	/*
-	srcImage, err := os.Open(setting.AppSetting.RuntimeRootPath + design.ImgName)
-	if err != nil {
-		logging.Warn(err)
-		return err
-	}
-	defer srcImage.Close()
-	*/
-
 	byteBuff, err := ioutil.ReadFile(setting.AppSetting.RuntimeRootPath + design.ImgName)
 	if err != nil{
 		fmt.Printf("%s\n",err)

@@ -76,7 +76,7 @@ type Applicant struct {
 
 // 证书类型表
 type C_certs struct {
-	CertID      string        `json:"cert_id"`                                     // 证书索引
+	CertID      string        `json:"cert_id" form:"cert_id"`                      // 证书索引
 	CertName    string        `json:"cert_name" form:"cert_name" valid:"Required"` // 证书名称
 	Authority   string        `json:"authority" form:"authority"`                  // 证书颁发机构
 	Price       int           `json:"price" form:"price"`                          // 申请费用
