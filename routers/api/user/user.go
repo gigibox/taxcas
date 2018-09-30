@@ -24,6 +24,7 @@ func ApplyForCert(c *gin.Context) {
 
 	var commit models.Applicant
 	var err error
+	var ok bool
 
 	err = c.BindJSON(&commit)
 	if err != nil {
@@ -34,7 +35,7 @@ func ApplyForCert(c *gin.Context) {
 
 	valid := validation.Validation{}
 
-	ok, _ := valid.Valid(&commit)
+	ok, _ = valid.Valid(&commit)
 	if !ok {
 		app.MarkErrors(valid.Errors)
 		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, "valid error")
@@ -60,7 +61,7 @@ func ApplyForCert(c *gin.Context) {
 	isOpen, err := applyService.CheckApplyStatus()
 	if err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_EXIST_CERT_FAIL, err)
+		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT_FAIL, err)
 		return
 	}
 
@@ -72,35 +73,48 @@ func ApplyForCert(c *gin.Context) {
 
 	// 生成编号
 	if !applyService.UpdateSerialNumber() {
-		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR, "生成证书编号错误")
+		appG.Response(http.StatusOK, false, e.ERROR, "生成证书编号错误")
 		return
 	}
 
-	// 同一微信号只能申请一次
-	if isApplied, err := applyService.CheckApplyExistByWX(); !isApplied {
-		logging.Warn(err)
-		appG.Response(http.StatusOK, false, e.ERROR_EXIST_APPLY, err)
-		return
-	}
+	// 判断是否是重新申领
+	dbdate := models.C_Apply{}
+	apply_service.GetApplyByOpenid(commit.CertID, commit.WechatID, &dbdate)
 
-	// 同一个身份证只能申请一次
-	if isApplied, err := applyService.CheckApplyExistByID(); !isApplied {
-		logging.Warn(err)
-		appG.Response(http.StatusOK, false, e.ERROR_EXIST_APPLY, err)
-		return
-	}
+	if dbdate.ApplyStatus != models.Reject {
+		// 同一微信号只能申请一次
+		if isApplied, err := applyService.CheckApplyExistByWX(); !isApplied {
+			logging.Warn(err)
+			appG.Response(http.StatusOK, false, e.ERROR_EXIST_APPLY, err)
+			return
+		}
 
-	// 提交申请
-	isAdded, err := applyService.Add()
-	if err != nil {
-		logging.Warn(err)
-		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_ADD_APPLY, err)
-		return
+		// 同一个身份证只能申请一次
+		if isApplied, err := applyService.CheckApplyExistByID(); !isApplied {
+			logging.Warn(err)
+			appG.Response(http.StatusOK, false, e.ERROR_EXIST_APPLY, err)
+			return
+		}
+
+		// 提交申请
+		ok, err = applyService.Add()
+		if err != nil {
+			logging.Warn(err)
+			appG.Response(http.StatusOK, false, e.ERROR_ADD_APPLY, err)
+			return
+		}
+	} else {
+		ok, err = applyService.Update()
+		if err != nil {
+			logging.Warn(err)
+			appG.Response(http.StatusOK, false, e.ERROR_ADD_APPLY, err)
+			return
+		}
 	}
 
 	// 更新用户信息
 	user_service.UpdateCerts(commit.User, applyService.Data.CertID, applyService.Data.ApplyStatus)
-	appG.Response(http.StatusCreated, isAdded, e.SUCCESS, err)
+	appG.Response(http.StatusCreated, ok, e.SUCCESS, err)
 }
 
 // @Summary 查询用户信息

@@ -40,6 +40,10 @@ func (this *S_cert) Add() (bool, error) {
 	return models.MgoInsert(this.Data, this.Collection)
 }
 
+func (this *S_cert) Edit() (bool, error) {
+	return models.MgoUpdate("certid", this.Data.CertID, "certs", this.Data)
+}
+
 func GetAllCertName() (interface{}) {
 	type simpleCert struct {
 		Id string `json:"cert_id"`

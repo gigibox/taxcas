@@ -56,6 +56,9 @@ func InitRouter() *gin.Engine {
 		// 添加证书
 		apiv1.POST("/admin/certs", admin.AddCert)
 
+		// 编辑证书
+		apiv1.PUT("/admin/certs", admin.EditCert)
+
 		// 上传图片
 		apiv1.POST("/admin/images", admin.UploadImage)
 

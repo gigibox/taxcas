@@ -122,7 +122,7 @@ func (this *Signer) drawStringImage(text string) (image.Image, error) {
 	c.SetSrc(fg)
 
 	// Draw the text.
-	pt := freetype.Pt(10, 10+int(c.PointToFixed(12)>>8))
+	pt := freetype.Pt(10, 10 + int(c.PointToFixed(this.FontSize)>>4))
 	if _, err := c.DrawString(text, pt); err != nil {
 		logging.Warn("c.DrawString(%s) error(%v)", text, err)
 		return nil, err

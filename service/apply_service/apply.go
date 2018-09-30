@@ -61,6 +61,10 @@ func (this *S_Apply) Add() (bool, error) {
 	return models.MgoInsert(this.Data, this.Collection)
 }
 
+func (this *S_Apply) Update() (bool, error) {
+	return models.MgoUpdate("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data);
+}
+
 func (this *S_Apply) UpdateStatus() (bool) {
 		statusCode := this.Data.ApplyStatus
 
@@ -195,17 +199,22 @@ func ExportFile(certid, act string) (string, error) {
 
 	// 更新申请状态
 	var newCode int
+	var newMsg  string
+	var newData bson.M
 
 	if code == models.Pending {
 		newCode = models.Verifying
+		newMsg = models.StatusMsg[newCode]
+
+		// 更新申请订单表
+		newData = bson.M{"$set": bson.M{"applystatus": newCode, "applystatusmsg": newMsg}}
 	} else if code == models.Reject {
 		newCode = models.Refunding
+		newMsg = models.StatusMsg[newCode]
+
+		// 更新支付状态
+		newData = bson.M{"$set": bson.M{"paystatus": newCode, "applystatusmsg": newMsg}}
 	}
-
-	newMsg := models.StatusMsg[newCode]
-
-	// 更新申请订单表
-	newData := bson.M{"$set": bson.M{"applystatus": newCode, "applystatusmsg": newMsg}}
 
 	// 一次更新所有状态
 	if ok, err := models.MgoUpdateAll(key, val, "cert" + certid + "_apply", newData); !ok {
@@ -262,8 +271,10 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 			}
 
 			GetApplyByPID(certid, record[3], &applyService.Data)
-			applyService.Data.ApplyStatus = statusCode
 			applyService.Data.ApplyStatusMsg = statusMsg
+			if applyService.Data.ApplyStatus != models.Reject {
+				applyService.Data.ApplyStatus = statusCode
+			}
 			if statusCode == models.Refunded {
 				applyService.Data.PayTime = time.Now().Unix()
 				applyService.Data.PayStatus = statusCode

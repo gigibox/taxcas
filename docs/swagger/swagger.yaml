@@ -280,6 +280,28 @@ paths:
       summary: 添加证书
       tags:
       - 后台管理
+    put:
+      parameters:
+      - description: 证书详细信息
+        in: body
+        name: certInfo
+        required: true
+        schema:
+          $ref: '#/definitions/models.C_certs'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 失败返回 false 及 msg
+          schema:
+            $ref: '#/definitions/app.ResponseMsg'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 编辑证书
+      tags:
+      - 后台管理
   /api/v1/admin/excels:
     post:
       parameters:

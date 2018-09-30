@@ -213,6 +213,41 @@
                     }
                 }
             },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "后台管理"
+                ],
+                "summary": "编辑证书",
+                "parameters": [
+                    {
+                        "description": "证书详细信息",
+                        "name": "certInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/models.C_certs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "失败返回 false 及 msg",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/app.ResponseMsg"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {

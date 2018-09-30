@@ -106,6 +106,46 @@ func AddCert(c *gin.Context) {
 	appG.Response(http.StatusCreated, isAdded, e.SUCCESS, err)
 }
 
+// @Summary 编辑证书
+// @Tags 	后台管理
+// @Security ApiKeyAuth
+// @Produce json
+// @Param   certInfo body models.C_certs true "证书详细信息"
+// @Success 200 {object} app.ResponseMsg "失败返回 false 及 msg"
+// @Router  /api/v1/admin/certs [put]
+func EditCert(c *gin.Context) {
+	appG := app.Gin{c}
+
+	var cert models.C_certs
+	var err error
+
+	contentType := c.Request.Header.Get("Content-Type")
+	switch contentType {
+	case "application/json":
+		err = c.BindJSON(&cert)
+	case "application/x-www-form-urlencoded":
+		err = c.MustBindWith(&cert, binding.FormPost)
+	}
+
+	if err != nil {
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, err)
+		return
+	}
+
+	valid := validation.Validation{}
+
+	if ok, _ := valid.Valid(&cert); !ok {
+		app.MarkErrors(valid.Errors)
+		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, "valid Errors")
+		return
+	}
+
+	certService := cert_service.S_cert{Collection: "certs", Data: cert}
+	ok, err := certService.Edit()
+
+	appG.Response(http.StatusCreated, ok, e.SUCCESS, err)
+}
+
 // @Summary 预览证书
 // @Tags 	后台管理
 // @Security ApiKeyAuth
