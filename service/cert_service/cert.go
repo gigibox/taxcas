@@ -28,7 +28,6 @@ func (this *S_cert) CheckExist() (bool, error) {
 }
 
 func (this *S_cert) Add() (bool, error) {
-	this.Data.Status = "enable"
 	count, err := models.MgoCountCollection(this.Collection)
 	if err != nil {
 		log.Println(err)
