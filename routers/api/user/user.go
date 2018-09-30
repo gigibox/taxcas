@@ -92,7 +92,7 @@ func ApplyForCert(c *gin.Context) {
 		// 同一个身份证只能申请一次
 		if isApplied, err := applyService.CheckApplyExistByID(); !isApplied {
 			logging.Warn(err)
-			appG.Response(http.StatusOK, false, e.ERROR_EXIST_APPLY, err)
+			appG.Response(http.StatusOK, false, e.ERROR_EXIST_APPLY_PID, err)
 			return
 		}
 
@@ -104,6 +104,11 @@ func ApplyForCert(c *gin.Context) {
 			return
 		}
 	} else {
+		if dbdate.PayStatus == models.Paid || dbdate.PayStatus == models.Refunding {
+			appG.Response(http.StatusOK, false, e.ERROR_EXIST_APPLY_PAY, err)
+			return
+		}
+
 		ok, err = applyService.Update()
 		if err != nil {
 			logging.Warn(err)

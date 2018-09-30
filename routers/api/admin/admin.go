@@ -449,7 +449,7 @@ func GetCertsName(c *gin.Context) {
 // @Param   certid path string true "证书id"
 // @Param   openid path string true "用户微信id"
 // @Success 200 {object} app.ResponseMsg "data:{"image_save_path":"export/images/96a.jpg", "image_url": "http://..."}"
-// @Router  /api/v1/weixin/e-certs/certs/{certid}/{openid} [get]
+// @Router  /api/v1/weixin/e-certs/{certid}/{openid} [get]
 func swagger_a(c *gin.Context) {
 }
 
