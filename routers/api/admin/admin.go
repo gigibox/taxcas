@@ -166,10 +166,11 @@ func PreviewImage(c *gin.Context) {
 		return
 	}
 
-	//t := models.GlobalDesigner
-	//t.ImgName = design.ImgName
+	// 暂时固定
+	def := models.GlobalDesigner
+	def.ImgName = design.ImgName
 
-	image, err := cert_service.GetCertImage(&design, nil)
+	image, err := cert_service.GetCertImage(&def, nil)
 	if err != nil {
 		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_UPLOAD_CREATE_IMAGE_FAIL, nil)
 
@@ -404,8 +405,7 @@ func OfficialWebsite(c *gin.Context) {
 		return
 	}
 
-	//if apply.SerialNumber == "" || apply.ApplyStatus != models.Passed {
-	if apply.SerialNumber == "" {
+	if apply.SerialNumber == "" || apply.ApplyStatus != models.Passed {
 		appG.Response(http.StatusOK, false, e.ERROR_GET_USER_CERT_IMAGES, nil)
 		return
 	}

@@ -72,7 +72,7 @@ func runService() {
 func main() {
 	app := cli.NewApp()
 	app.Name = "taxcas"
-	app.Version = "0.0.1"
+	app.Version = "1.0.0"
 	app.Usage = "Certificate authentication system."
 	app.Flags = []cli.Flag {
 			cli.StringFlag{
