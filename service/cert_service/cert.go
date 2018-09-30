@@ -2,6 +2,7 @@ package cert_service
 
 import "C"
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"taxcas/models"
@@ -9,6 +10,7 @@ import (
 	"taxcas/pkg/logging"
 	"taxcas/pkg/upload"
 	"taxcas/pkg/util"
+	"time"
 )
 
 type S_cert struct {
@@ -128,12 +130,13 @@ func GetCertImage(design *models.ImageDesigner, apply *models.C_Apply) (string, 
 		}
 
 		// 生成
+		at := time.Unix(apply.ApplyDate, 0)
 		designer := cert.ImageDesign
 		designer.Name.Str			= apply.Name
 		designer.EnglishName.Str 	= apply.EnglishName
 		designer.PersonalID.Str		= apply.PersonalID
 		designer.SerialNumber.Str	= apply.SerialNumber
-		designer.Date.Str			= apply.StudyDate
+		designer.Date.Str			= fmt.Sprintf("%d        %d       %d", at.Year(), at.Month(), at.Day())
 
 		image = export.GetExportImagePath(apply.CertID) + apply.SerialNumber + ".png"
 
