@@ -36,6 +36,7 @@ func GetCertsList(c *gin.Context) {
 // @Param   	type query string true "类型 all | export | verify | passed | Reject"
 // @Param   	page query int false "页数"
 // @Param   	limit query int false "每页显示的条数"
+// @Param   	field query string false "指定条件查询, 姓名或身份证号"
 // @Produce  	json
 // @Success 	200 {object} app.ResponseMsg "data:[{""}]"
 // @Router 		/api/v1/admin/applicants/certs/{certid} [get]
@@ -44,6 +45,7 @@ func GetApplicantList(c *gin.Context) {
 
 	id    := c.Param("certid")
 	act   := c.Query("type")
+	fie   := c.Query("field")
 	page  := com.StrTo(c.Query("page")).MustInt()
 	limit := com.StrTo(c.Query("limit")).MustInt()
 
@@ -52,7 +54,7 @@ func GetApplicantList(c *gin.Context) {
 		return
 	}
 
-	appG.Response(http.StatusOK, true, e.SUCCESS, apply_service.GetApplyList(c.Param("certid"), act, page, limit))
+	appG.Response(http.StatusOK, true, e.SUCCESS, apply_service.GetApplyList(c.Param("certid"), act, page, limit, fie))
 }
 
 // @Summary 添加证书

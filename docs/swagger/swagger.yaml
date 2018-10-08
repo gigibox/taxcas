@@ -201,6 +201,10 @@ paths:
         in: query
         name: limit
         type: integer
+      - description: 指定条件查询, 姓名或身份证号
+        in: query
+        name: field
+        type: string
       produces:
       - application/json
       responses:
@@ -518,7 +522,7 @@ paths:
       summary: 获取证书列表
       tags:
       - 微信公众号
-  /api/v1/weixin/e-certs/certs/{certid}/{openid}:
+  /api/v1/weixin/e-certs/{certid}/{openid}:
     get:
       parameters:
       - description: 证书id

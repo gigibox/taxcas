@@ -60,22 +60,22 @@ func InitRouter() *gin.Engine {
 		// 编辑证书
 		apiv1.PUT("/admin/certs", admin.EditCert)
 
-		// 上传图片
+		// 上传证书模板
 		apiv1.POST("/admin/images", admin.UploadImage)
 
 		// 上传CSV文件
 		apiv1.POST("/admin/excels", admin.UploadExcel)
 
-		// 预览证书
+		// 预览证书模板
 		apiv1.POST("/admin/images/certs", admin.PreviewImage)
 
-		// 获取申请状态
+		// 查询申请信息
 		apiv1.GET("/admin/applicants/certs/:certid", admin.GetApplicantList)
 
 		// 执行审核结果
 		apiv1.PUT("/admin/applicants/certs/:certid", admin.UpdateApplicants)
 
-		// 导出申请状态
+		// 导出申请信息
 		apiv1.GET("/admin/files/applicants/certs/:certid", admin.ExportApplicants)
 
 		// 修改密码

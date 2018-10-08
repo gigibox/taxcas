@@ -133,6 +133,12 @@
                         "description": "每页显示的条数",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "指定条件查询, 姓名或身份证号",
+                        "name": "field",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -622,7 +628,7 @@
                 }
             }
         },
-        "/api/v1/weixin/e-certs/certs/{certid}/{openid}": {
+        "/api/v1/weixin/e-certs/{certid}/{openid}": {
             "get": {
                 "tags": [
                     "微信公众号"

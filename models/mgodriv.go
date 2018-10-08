@@ -111,10 +111,10 @@ func MgoFindOne(key, value, col string, result interface{}) (bool, error) {
 	return true, err
 }
 
-func MgoFind(key string, value interface{}, col string, page, limit int, result interface{}) (bool, error) {
+func MgoFind(sel interface{}, col string, page, limit int, result interface{}) (bool, error) {
 	c := session.DB(setting.DatabaseSetting.Name).C(setting.DatabaseSetting.TablePrefix + col)
 
-	err := c.Find(bson.M{key: value}).Skip(page * limit).Limit(limit).All(result)
+	err := c.Find(sel).Skip(page * limit).Limit(limit).All(result)
 	if err != nil {
 		return false, err
 	}
@@ -128,10 +128,10 @@ func MgoFindAll(col string, result interface{}) (error) {
 	return c.Find(nil).All(result)
 }
 
-func MgoCountQuery(key string, value interface{}, col string) (int, error) {
+func MgoCountQuery(sel interface{}, col string) (int, error) {
 	c := session.DB(setting.DatabaseSetting.Name).C(setting.DatabaseSetting.TablePrefix + col)
 
-	return c.Find(bson.M{key: value}).Count()
+	return c.Find(sel).Count()
 }
 
 func MgoCountCollection(col string) (int, error) {

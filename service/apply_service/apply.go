@@ -113,8 +113,8 @@ func parseAction(action string) (string, interface{}) {
 	return "", nil
 }
 
-func GetApplyList(id, action string, page, limit int) (interface{}) {
-	result := []models.C_Apply{}
+func GetApplyList(id, action string, page, limit int, ext string) (interface{}) {
+	doc := []models.C_Apply{}
 
 	if page > 0 {
 		page -= 1
@@ -122,15 +122,26 @@ func GetApplyList(id, action string, page, limit int) (interface{}) {
 
 	key, val := parseAction(action)
 
+	selecter :=	bson.M{key: val}
+
+	// 输入框查询, 18位为身份证号, 否则查询姓名
+	if ext != "" {
+		if len(ext) == 18 {
+			selecter = bson.M{key: val, "applicant.user.personalid": ext}
+		} else {
+			selecter = bson.M{key: val, "applicant.user.name": ext}
+		}
+	}
+
 	// 统计符合条件的总数
-	count, _ := models.MgoCountQuery(key, val, "cert" + id + "_apply")
+	count, _ := models.MgoCountQuery(selecter, "cert" + id + "_apply")
 
 	// 查询
-	models.MgoFind(key, val, "cert" + id + "_apply", page, limit, &result)
+	models.MgoFind(selecter, "cert" + id + "_apply", page, limit, &doc)
 
 	return map[string]interface{} {
 		"count": count,
-		"list" : result,
+		"list" : doc,
 	}
 }
 
@@ -159,7 +170,8 @@ func ExportFile(certid, act string) (string, error) {
 	// 查询结果
 	docs := []models.C_Apply{}
 	key, val := parseAction(act)
-	models.MgoFind(key, val, "cert" + certid + "_apply", 0, 0, &docs)
+
+	models.MgoFind(bson.M{key: val}, "cert" + certid + "_apply", 0, 0, &docs)
 
 	// 文件名已查询条件 + 时间 命名
 	timestamp := strconv.Itoa(int(time.Now().Unix()))
