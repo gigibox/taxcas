@@ -36,6 +36,7 @@ type Coord struct {
 	Str      string
 	Font     string  `json:"font" form:"font"`
 	FontSize float64 `json:"font_size" form:"font_size"`
+	TextAlign string `json:"text-align" form:"text-align"`
 	X        int
 	Y        int
 }
@@ -116,12 +117,14 @@ var GlobalDesigner = ImageDesigner{
 		Str:      "李 雷",
 		Font:     "微软雅黑",
 		FontSize: 20,
+		TextAlign: "center",
 		X:        265,
 		Y:        200,
 	},
 	EnglishName: Coord{
 		Str:      "Li Lei",
 		Font:     "微软雅黑",
+		TextAlign: "center",
 		FontSize: 12,
 		X:        265,
 		Y:        250,

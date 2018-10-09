@@ -70,3 +70,7 @@ func CheckExcelExt(fileName string) bool {
 
 	return false
 }
+
+func GetFontPath() string {
+	return setting.AppSetting.RuntimeRootPath + setting.AppSetting.FontSavePath
+}

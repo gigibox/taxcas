@@ -2,15 +2,18 @@ package models
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
+	"golang.org/x/image/font"
+	"golang.org/x/image/math/fixed"
 	"image"
 	"image/draw"
 	"image/png"
 	"io"
 	"io/ioutil"
+	"math"
 	"taxcas/pkg/setting"
+	"taxcas/pkg/upload"
 
 	"os"
 	"taxcas/pkg/logging"
@@ -25,8 +28,8 @@ type Signer struct {
 	FontSize   float64
 	Dpi        float64
 	font       *truetype.Font
-	startPoint image.Point
 	signPoint  image.Point
+	drawPoint  image.Point
 }
 
 func initFont(fontPath string) (*truetype.Font, error) {
@@ -56,8 +59,8 @@ func (this *Signer) SetFont(fontPath string, fontSize float64) (bool) {
 	return true
 }
 
-func (this *Signer) SetStartPoint(x int, y int) {
-	this.startPoint = image.Pt(x, y)
+func (this *Signer) SetDrawPoint(x int, y int) {
+	this.drawPoint = image.Pt(x, y)
 }
 
 func (this *Signer) SetSignPoint(x int, y int) {
@@ -82,22 +85,24 @@ func (this *Signer) Sign(input io.Reader, output io.Writer, design *ImageDesigne
 	coords := []Coord{design.Name, design.EnglishName, design.PersonalID, design.SerialNumber, design.Date}
 	for i, _ := range coords {
 		if coords[i].Str != "" && coords[i].X != 0 && coords[i].Y != 0 {
-			this.SetStartPoint(coords[i].X, coords[i].Y)
-
 			// 设置字体, 字号
-			fontPath := setting.AppSetting.RuntimeRootPath + setting.AppSetting.FontSavePath + coords[i].Font
+			fontPath := upload.GetFontPath() + coords[i].Font
 			if _, err := os.Stat(fontPath); err != nil {
-				fontPath = setting.AppSetting.RuntimeRootPath + setting.AppSetting.FontSavePath + "default.ttc"
+				fontPath = upload.GetFontPath() + "default.ttc"
 			}
 
 			this.SetFont(fontPath, coords[i].FontSize)
 
-			mask, err := this.drawStringImage(coords[i].Str)
-			if err != nil {
-				logging.Warn("drawStringImage error(%v)", err)
-				return err
+			mask := this.drawStringImage(coords[i].Str, coords[i].TextAlign)
+
+			// 设置位置
+			X := coords[i].X
+			if coords[i].TextAlign == "center" {
+				X = (dst.Bounds().Dx() - this.drawPoint.X) / 2
 			}
-			draw.Draw(dst, mask.Bounds().Add(this.startPoint), mask, image.ZP, draw.Over)
+			this.SetSignPoint(X, coords[i].Y)
+
+			draw.Draw(dst, mask.Bounds().Add(this.signPoint), mask, image.ZP, draw.Over)
 		}
 	}
 
@@ -106,37 +111,43 @@ func (this *Signer) Sign(input io.Reader, output io.Writer, design *ImageDesigne
 		logging.Warn("image encode error(%v)", err)
 		return err
 	}
+
 	return nil
 }
 
-// draw text image
-func (this *Signer) drawStringImage(text string) (image.Image, error) {
-	fg, bg := image.Black, image.Transparent
-	rgba := image.NewRGBA(image.Rect(0, 0, this.signPoint.X, this.signPoint.Y))
-	draw.Draw(rgba, rgba.Bounds(), bg, image.ZP, draw.Src)
+func (this *Signer) drawStringImage(text, align string) (image.Image) {
+	rgba := image.NewRGBA(image.Rect(0, 0, this.drawPoint.X, this.drawPoint.Y))
 
-	c := freetype.NewContext()
-	c.SetDPI(this.Dpi)
-	c.SetFont(this.font)
-	c.SetFontSize(this.FontSize)
-	c.SetClip(rgba.Bounds())
-	c.SetDst(rgba)
-	c.SetSrc(fg)
+	draw.Draw(rgba, rgba.Bounds(), image.Transparent, image.ZP, draw.Src)
+	painter := &font.Drawer{
+		Dst: rgba,
+		Src: image.Black,
+		Face: truetype.NewFace(this.font, &truetype.Options{
+			Size:    this.FontSize,
+			DPI:     this.Dpi,
+			Hinting: font.HintingNone,
+		}),
+	}
+	y := 10 + int(math.Ceil(this.FontSize * this.Dpi / 72))
 
-	// Draw the text.
-	pt := freetype.Pt(10, 10 + int(c.PointToFixed(this.FontSize)>>4))
-	if _, err := c.DrawString(text, pt); err != nil {
-		logging.Warn("c.DrawString(%s) error(%v)", text, err)
-		return nil, err
+	if align == "center" {
+		painter.Dot = fixed.Point26_6{
+			X: (fixed.I(this.drawPoint.X) - painter.MeasureString(text)) / 2,
+			Y: fixed.I(y),
+		}
+	} else {
+		painter.Dot = fixed.P(10, y)
 	}
 
-	return rgba, nil
+	painter.DrawString(text)
+
+	return rgba
 }
 
 func SignImage(imagePath string,  design *ImageDesigner) (error) {
 	byteBuff, err := ioutil.ReadFile(setting.AppSetting.RuntimeRootPath + design.ImgName)
 	if err != nil{
-		fmt.Printf("%s\n",err)
+		logging.Fatal(err)
 		panic(err)
 	}
 
@@ -152,13 +163,9 @@ func SignImage(imagePath string,  design *ImageDesigner) (error) {
 	signWriter :=  &Signer{
 		FontSize:   DefaultFontSize,
 		Dpi:        DefaultDpi,
-		startPoint: image.ZP,
-		signPoint:  image.Point{X: 594, Y: 841}, // < A4 72dpi
+		signPoint:  image.ZP,
+		drawPoint:  image.Point{X: 500, Y: 500},
 	}
 
-	if err := signWriter.Sign(srcImage, saveImage, design); err != nil {
-		return err
-	}
-
-	return nil
+	return signWriter.Sign(srcImage, saveImage, design)
 }
