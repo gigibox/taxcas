@@ -28,7 +28,7 @@ func ApplyForCert(c *gin.Context) {
 
 	err = c.BindJSON(&commit)
 	if err != nil {
-		logging.Warn(err)
+		logging.Debug(err)
 		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, "BindJson")
 		return
 	}
@@ -47,26 +47,22 @@ func ApplyForCert(c *gin.Context) {
 	// 判断证书是否存在, 或关闭申请
 	isExist, err := applyService.CheckCertByName()
 	if err != nil {
-		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT_FAIL, err)
 		return
 	}
 
 	if isExist {
-		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, err)
 		return
 	}
 
 	isOpen, err := applyService.CheckApplyStatus()
 	if err != nil {
-		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT_FAIL, err)
 		return
 	}
 
 	if !isOpen {
-		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.ERROR_CERT_APPLY_DISABLED, err)
 		return
 	}
@@ -84,14 +80,12 @@ func ApplyForCert(c *gin.Context) {
 	if dbdate.ApplyStatus != models.Reject {
 		// 同一微信号只能申请一次
 		if isApplied, err := applyService.CheckApplyExistByWX(); !isApplied {
-			logging.Warn(err)
 			appG.Response(http.StatusOK, false, e.ERROR_EXIST_APPLY, err)
 			return
 		}
 
 		// 同一个身份证只能申请一次
 		if isApplied, err := applyService.CheckApplyExistByID(); !isApplied {
-			logging.Warn(err)
 			appG.Response(http.StatusOK, false, e.ERROR_EXIST_APPLY_PID, err)
 			return
 		}
@@ -137,7 +131,6 @@ func GetUserInfo(c *gin.Context) {
 	openid	:= c.Param("openid")
 
 	if ok, err := user_service.GetUser(openid, &user); !ok {
-		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_USER, err)
 		return
 	}

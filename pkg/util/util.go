@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"taxcas/pkg/file"
 	"taxcas/pkg/logging"
@@ -93,4 +94,13 @@ func GetFontsList() []string {
 	}
 
 	return fonts
+}
+
+func CompressStr(str string) string {
+	if str == "" {
+		return ""
+	}
+	//匹配一个或多个空白符的正则表达式
+	reg := regexp.MustCompile("\\s+")
+	return reg.ReplaceAllString(str, "")
 }

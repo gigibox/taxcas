@@ -4,12 +4,12 @@ import (
 	"encoding/csv"
 	"gopkg.in/mgo.v2/bson"
 	"io"
-	"log"
 	"os"
 	"strconv"
 	"taxcas/models"
 	"taxcas/pkg/export"
 	"taxcas/pkg/logging"
+	"taxcas/pkg/util"
 	"taxcas/service/msg_service"
 	"taxcas/service/user_service"
 	"taxcas/service/weixin_service"
@@ -70,14 +70,14 @@ func (this *S_Apply) UpdateStatus() (bool) {
 
 		// 根据身份证号 更新申请订单状态
 		if ok , err := models.MgoUpdate("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data); !ok {
-			logging.Warn("Update applicant status:", err)
+			logging.Debug("Update applicant status:", err)
 			return false
 		}
 
 		// 判断为退款请求, 发起退款申请
 		if statusCode == models.Refunded {
 			if ok, err := weixin_service.WXPayRefund(this.Data.PayOrder); !ok {
-				logging.Error("订单%s, 退款失败. %s", this.Data.PayOrder, err)
+				logging.Error("Pay order: %s, Refund failure: %s", this.Data.PayOrder, err)
 				return false
 			}
 		}
@@ -168,19 +168,30 @@ func ExportFile(certid, act string) (string, error) {
 	}
 
 	// 查询结果
-	docs := []models.C_Apply{}
 	key, val := parseAction(act)
 
-	models.MgoFind(bson.M{key: val}, "cert" + certid + "_apply", 0, 0, &docs)
+	selecter := bson.M{key: val}
+	if val == models.Reject {
+		selecter = bson.M{key: val, "paystatus": models.Paid}
+	}
 
-	// 文件名已查询条件 + 时间 命名
-	timestamp := strconv.Itoa(int(time.Now().Unix()))
-	filecsv := export.GetExportExcelPath() + models.StatusMsg[code] + "-" +  timestamp + ".csv"
+	docs := []models.C_Apply{}
+	models.MgoFind(selecter, "cert" + certid + "_apply", 0, 0, &docs)
+
+	if len(docs) == 0 {
+		logging.Debug("Export csv File, condition not queried ")
+		return "", nil
+	}
+
+	// 文件名: 证书名称-查询条件-日期.csv
+	tm := time.Unix(time.Now().Unix(), 0)
+	filecsv := export.GetExportExcelPath() + docs[0].CertName + "-" + models.StatusMsg[code] + "-" +  tm.Format("20060102") + ".csv"
 
 	// 创建 csv 文件
 	f, err := os.Create(export.GetRuntimePath() + filecsv)
 	if err != nil {
-		panic(err)
+		logging.Error("Creat csv file fail: ",err)
+		return "", err
 	}
 	defer f.Close()
 
@@ -196,10 +207,10 @@ func ExportFile(certid, act string) (string, error) {
 
 	for i := range docs {
 		row := []string{
-			docs[i].SerialNumber,
+			docs[i].SerialNumber + "\t", // 避免数字以科学计数法显示
 			docs[i].CertName,
 			docs[i].Name,
-			docs[i].PersonalID,
+			docs[i].PersonalID + "\t",
 			docs[i].StudyDate,
 			strconv.Itoa(docs[i].PayAmount),
 		}
@@ -229,8 +240,8 @@ func ExportFile(certid, act string) (string, error) {
 	}
 
 	// 一次更新所有状态
-	if ok, err := models.MgoUpdateAll(key, val, "cert" + certid + "_apply", newData); !ok {
-		log.Println(err)
+	if ok, err := models.MgoUpdateAll(selecter, "cert" + certid + "_apply", newData); !ok {
+		logging.Error("Update all apply status failure: ", err)
 	}
 
 	// 更新用户表状态
@@ -263,7 +274,8 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 		// 解析cav文件
 		f, err := os.Open(file)
 		if err != nil {
-			panic(err)
+			logging.Error(err)
+			return 0, 0
 		}
 		defer f.Close()
 
@@ -282,11 +294,20 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 				continue
 			}
 
-			GetApplyByPID(certid, record[3], &applyService.Data)
+			// 去除空格和制表符
+			pid := util.CompressStr(record[3])
+
+			if ext, _ := GetApplyByPID(certid, pid, &applyService.Data); !ext {
+				failure ++
+				continue
+			}
+
 			applyService.Data.ApplyStatusMsg = statusMsg
 			if applyService.Data.ApplyStatus != models.Reject {
 				applyService.Data.ApplyStatus = statusCode
 			}
+
+			// 更新退款状态
 			if statusCode == models.Refunded {
 				applyService.Data.PayTime = time.Now().Unix()
 				applyService.Data.PayStatus = statusCode
@@ -301,9 +322,15 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 	} else {
 		// 手动选择
 		for i := range pids{
-			GetApplyByPID(certid, pids[i], &applyService.Data)
+			if ext, _ := GetApplyByPID(certid, pids[i], &applyService.Data); !ext {
+				failure ++
+				continue
+			}
+
 			applyService.Data.ApplyStatus = statusCode
 			applyService.Data.ApplyStatusMsg = statusMsg
+
+			// 更新退款状态
 			if statusCode == models.Refunded {
 				applyService.Data.PayTime = time.Now().Unix()
 				applyService.Data.PayStatus = statusCode

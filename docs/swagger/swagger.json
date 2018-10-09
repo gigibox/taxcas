@@ -345,7 +345,7 @@
                     },
                     {
                         "type": "string",
-                        "description": "类型 export | Reject",
+                        "description": "类型 export | reject",
                         "name": "type",
                         "in": "query",
                         "required": true
@@ -353,7 +353,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "data:{\"file_save_path\":\"upload/images/96a.csv\", \"file_url\": \"http://...\"}",
+                        "description": "data:{\"file_save_path\":\"upload/excel/96a.csv\", \"file_url\": \"http://...\"}",
                         "schema": {
                             "type": "object",
                             "$ref": "#/definitions/app.ResponseMsg"
@@ -929,6 +929,9 @@
                     "type": "number"
                 },
                 "str": {
+                    "type": "string"
+                },
+                "text_align": {
                     "type": "string"
                 },
                 "x": {

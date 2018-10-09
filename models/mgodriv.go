@@ -79,9 +79,9 @@ func MgoUpdate(key string, value interface{}, col string, doc interface{}) (bool
 	return true, nil
 }
 
-func MgoUpdateAll(key string, value interface{}, col string, doc interface{}) (bool, error) {
+func MgoUpdateAll(sel interface{}, col string, doc interface{}) (bool, error) {
 	c := session.DB(setting.DatabaseSetting.Name).C(setting.DatabaseSetting.TablePrefix + col)
-	_, err := c.UpdateAll(bson.M{key: value}, doc)
+	_, err := c.UpdateAll(sel, doc)
 	if err !=nil {
 		return false, err
 	}

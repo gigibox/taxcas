@@ -89,6 +89,8 @@ definitions:
         type: number
       str:
         type: string
+      text_align:
+        type: string
       x:
         type: integer
       "y":
@@ -333,7 +335,7 @@ paths:
         name: certid
         required: true
         type: string
-      - description: 类型 export | Reject
+      - description: 类型 export | reject
         in: query
         name: type
         required: true
@@ -342,7 +344,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: 'data:{"file_save_path":"upload/images/96a.csv", "file_url":
+          description: 'data:{"file_save_path":"upload/excel/96a.csv", "file_url":
             "http://..."}'
           schema:
             $ref: '#/definitions/app.ResponseMsg'

@@ -4,7 +4,6 @@ import (
 	"github.com/Unknwon/com"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 	"net/http"
 	"taxcas/models"
 	"taxcas/pkg/app"
@@ -68,16 +67,8 @@ func AddCert(c *gin.Context) {
 	appG := app.Gin{c}
 
 	var cert models.C_certs
-	var err error
 
-	contentType := c.Request.Header.Get("Content-Type")
-	switch contentType {
-		case "application/json":
-			err = c.BindJSON(&cert)
-		case "application/x-www-form-urlencoded":
-			err = c.MustBindWith(&cert, binding.FormPost)
-	}
-
+	err := c.Bind(&cert)
 	if err != nil {
 		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, err)
 		return
@@ -91,10 +82,6 @@ func AddCert(c *gin.Context) {
 		return
 	}
 
-	// 暂时写死设计模板
-	n := cert.ImageDesign.ImgName
-	cert.ImageDesign = models.GlobalDesigner
-	cert.ImageDesign.ImgName = n
 	certService := cert_service.S_cert{Collection: "certs", Data: cert}
 
 	if isExist, _ := certService.CheckExist(); !isExist {
@@ -119,16 +106,8 @@ func EditCert(c *gin.Context) {
 	appG := app.Gin{c}
 
 	var cert models.C_certs
-	var err error
 
-	contentType := c.Request.Header.Get("Content-Type")
-	switch contentType {
-	case "application/json":
-		err = c.BindJSON(&cert)
-	case "application/x-www-form-urlencoded":
-		err = c.MustBindWith(&cert, binding.FormPost)
-	}
-
+	err := c.Bind(&cert)
 	if err != nil {
 		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, err)
 		return
@@ -142,9 +121,6 @@ func EditCert(c *gin.Context) {
 		return
 	}
 
-	n := cert.ImageDesign.ImgName
-	cert.ImageDesign = models.GlobalDesigner
-	cert.ImageDesign.ImgName = n
 	certService := cert_service.S_cert{Collection: "certs", Data: cert}
 	ok, err := certService.Edit()
 
@@ -161,18 +137,20 @@ func EditCert(c *gin.Context) {
 func PreviewImage(c *gin.Context) {
 	appG := app.Gin{c}
 
-	var design models.ImageDesigner
+	var cert models.C_certs
 
-	if err := c.Bind(&design); err != nil {
+	if err := c.Bind(&cert); err != nil {
 		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, err)
 		return
 	}
 
-	// 暂时固定
-	def := models.GlobalDesigner
-	def.ImgName = design.ImgName
+	cert.ImageDesign.Name.Str = "李雷"
+	cert.ImageDesign.EnglishName.Str = "LiLei"
+	cert.ImageDesign.PersonalID.Str = "123456197805043210"
+	cert.ImageDesign.SerialNumber.Str = "20181000123456"
+	cert.ImageDesign.Date.Str = "2018      10      9"
 
-	image, err := cert_service.GetCertImage(&def, nil)
+	image, err := cert_service.GetCertImage(&cert.ImageDesign, nil)
 	if err != nil {
 		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_UPLOAD_CREATE_IMAGE_FAIL, nil)
 
@@ -282,22 +260,22 @@ func UploadExcel(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Produce  json
 // @Param    certid path string true "Cert ID"
-// @Param    type query string true "类型 export | Reject"
-// @Success  200 {object} app.ResponseMsg "data:{"file_save_path":"upload/images/96a.csv", "file_url": "http://..."}"
+// @Param    type query string true "类型 export | reject"
+// @Success  200 {object} app.ResponseMsg "data:{"file_save_path":"upload/excel/96a.csv", "file_url": "http://..."}"
 // @Router   /api/v1/admin/files/applicants/certs/{certid} [get]
 func ExportApplicants(c *gin.Context) {
 	appG := app.Gin{c}
 
 	certid := c.Param("certid")
 
-	if isExist, _ := cert_service.CheckExistByID(certid); isExist {
-		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, nil)
+	if isExist, err := cert_service.CheckExistByID(certid); isExist {
+		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_CERT, err)
 		return
 	}
 
-	filename, _ := apply_service.ExportFile(certid, c.Query("type"))
+	filename, err := apply_service.ExportFile(certid, c.Query("type"))
 	if filename == "" {
-		appG.Response(http.StatusOK, false, e.ERROR_EXPORT_FILE_FAIL, nil)
+		appG.Response(http.StatusOK, false, e.ERROR_EXPORT_FILE_FAIL, err)
 		return
 	}
 

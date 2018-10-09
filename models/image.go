@@ -95,7 +95,7 @@ func (this *Signer) Sign(input io.Reader, output io.Writer, design *ImageDesigne
 
 			mask := this.drawStringImage(coords[i].Str, coords[i].TextAlign)
 
-			// 设置位置
+			// 设置绘图位置
 			X := coords[i].X
 			if coords[i].TextAlign == "center" {
 				X = (dst.Bounds().Dx() - this.drawPoint.X) / 2
@@ -147,8 +147,8 @@ func (this *Signer) drawStringImage(text, align string) (image.Image) {
 func SignImage(imagePath string,  design *ImageDesigner) (error) {
 	byteBuff, err := ioutil.ReadFile(setting.AppSetting.RuntimeRootPath + design.ImgName)
 	if err != nil{
-		logging.Fatal(err)
-		panic(err)
+		logging.Warn(err)
+		return err
 	}
 
 	srcImage := bytes.NewReader(byteBuff)

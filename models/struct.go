@@ -36,14 +36,14 @@ type Coord struct {
 	Str      string
 	Font     string  `json:"font" form:"font"`
 	FontSize float64 `json:"font_size" form:"font_size"`
-	TextAlign string `json:"text-align" form:"text-align"`
+	TextAlign string `json:"text_align" form:"text_align"`
 	X        int
 	Y        int
 }
 
 // 绘图位置
 type ImageDesigner struct {
-	ImgName      string `json:"img_name" form:"img_name"`
+	ImgName      string `json:"img_name" form:"img_name" valid:"Required"`
 	Name         Coord  `json:"name" form:"name"`
 	EnglishName  Coord  `json:"english_name" form:"english_name"`
 	SerialNumber Coord  `json:"serial_number" form:"serial_number"`
@@ -81,7 +81,7 @@ type C_certs struct {
 	CertName    string        `json:"cert_name" form:"cert_name" valid:"Required"` // 证书名称
 	Authority   string        `json:"authority" form:"authority"`                  // 证书颁发机构
 	Price       int           `json:"price" form:"price"`                          // 申请费用
-	Status      string        `json:"status" form:"status" valid:"Required"`       // 申请状态
+	Status      string        `json:"status" form:"status"`                        // 申请状态
 	ImageDesign ImageDesigner `json:"image_design"`                                // 内容位置
 }
 
@@ -110,46 +110,6 @@ type C_Apply struct {
 	ApplyStatus    int    `json:"apply_status"`     // 申请状态
 	ApplyStatusMsg string `json:"apply_status_msg"` // 申请状态信息
 	ApplyDate      int64  `json:"apply_date"`       // 申请时间
-}
-
-var GlobalDesigner = ImageDesigner{
-	Name: Coord{
-		Str:      "李 雷",
-		Font:     "微软雅黑",
-		FontSize: 20,
-		TextAlign: "center",
-		X:        265,
-		Y:        200,
-	},
-	EnglishName: Coord{
-		Str:      "Li Lei",
-		Font:     "微软雅黑",
-		TextAlign: "center",
-		FontSize: 12,
-		X:        265,
-		Y:        250,
-	},
-	PersonalID: Coord{
-		Str:      "110010201010010101",
-		Font:     "微软雅黑",
-		FontSize: 10,
-		X:        200,
-		Y:        346,
-	},
-	SerialNumber: Coord{
-		Str:      "20180914012345",
-		Font:     "微软雅黑",
-		FontSize: 10,
-		X:        133,
-		Y:        640,
-	},
-	Date: Coord{
-		Str:      "2018        9       14",
-		Font:     "微软雅黑",
-		FontSize: 10,
-		X:        392,
-		Y:        666,
-	},
 }
 
 type WXPayNotifyReq struct {
