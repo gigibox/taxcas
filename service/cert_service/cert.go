@@ -3,7 +3,6 @@ package cert_service
 import "C"
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"taxcas/models"
 	"taxcas/pkg/export"
@@ -30,7 +29,7 @@ func (this *S_cert) CheckExist() (bool, error) {
 func (this *S_cert) Add() (bool, error) {
 	count, err := models.MgoCountCollection(this.Collection)
 	if err != nil {
-		log.Println(err)
+		logging.Warn(err)
 		return false, err
 	}
 	count++
@@ -93,7 +92,7 @@ func GetCertFile(apply *models.C_Apply) (string, error) {
 	util.CheckDir(export.GetRuntimePath() + export.GetExportPDFPath(apply.CertID))
 
 	if err := models.Image2PDF(export.GetRuntimePath() + filePDF, export.GetRuntimePath() + apply.ImageSaveUrl); err != nil {
-		log.Println(err)
+		logging.Warn(err)
 		return "", err
 	}
 
@@ -115,7 +114,7 @@ func GetCertImage(design *models.ImageDesigner, apply *models.C_Apply) (string, 
 
 		err := models.SignImage(image, design)
 		if err != nil {
-			log.Println(err)
+			logging.Warn(err)
 			return "", err
 		}
 	} else {
@@ -143,7 +142,7 @@ func GetCertImage(design *models.ImageDesigner, apply *models.C_Apply) (string, 
 		util.CheckDir(export.GetRuntimePath() + export.GetExportImagePath(apply.CertID))
 
 		if err := models.SignImage(image, &designer); err != nil {
-			log.Println(err)
+			logging.Warn(err)
 			return "", err
 		}
 

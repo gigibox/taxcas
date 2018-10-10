@@ -85,7 +85,7 @@ func AddCert(c *gin.Context) {
 	certService := cert_service.S_cert{Collection: "certs", Data: cert}
 
 	if isExist, _ := certService.CheckExist(); !isExist {
-		appG.Response(http.StatusConflict, false, e.ERROR_EXIST_CERT, nil)
+		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT, nil)
 		return
 	}
 
@@ -152,7 +152,7 @@ func PreviewImage(c *gin.Context) {
 
 	image, err := cert_service.GetCertImage(&cert.ImageDesign, nil)
 	if err != nil {
-		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_UPLOAD_CREATE_IMAGE_FAIL, nil)
+		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_CREATE_IMAGE_FAIL, err)
 
 		return
 	}
@@ -356,7 +356,7 @@ func UserCertificates(c *gin.Context) {
 
 	image, err := cert_service.GetCertImage(nil, &apply)
 	if image == "" {
-		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_GET_USER_CERT_IMAGES, err)
+		appG.Response(http.StatusOK, false, e.ERROR_GET_USER_CERT_IMAGES, err)
 		return
 	}
 
@@ -395,13 +395,13 @@ func OfficialWebsite(c *gin.Context) {
 
 	image, err := cert_service.GetCertImage(nil, &apply)
 	if image == "" {
-		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_GET_USER_CERT_IMAGES, err)
+		appG.Response(http.StatusOK, false, e.ERROR_GET_USER_CERT_IMAGES, err)
 		return
 	}
 
 	pdf, err := cert_service.GetCertFile(&apply)
 	if pdf == "" {
-		appG.Response(http.StatusUnprocessableEntity, false, e.ERROR_GET_USER_CERT_FILES, err)
+		appG.Response(http.StatusOK, false, e.ERROR_GET_USER_CERT_FILES, err)
 		return
 	}
 

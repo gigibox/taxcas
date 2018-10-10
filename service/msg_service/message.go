@@ -15,6 +15,10 @@ const (
 	PassedMsg = "{{.Name}}你好，你于{{.Date}}提交的{{.Cert}}电子证书领取申请已审核通过，可在【电子证书】中选择证书查看下载"
 	RejectMsg = "{{.Name}}你好，很抱歉你于{{.Date}}提交的{{.Cert}}电子证书领取申请未审核通过，可在【电子证书】中重新申请"
 )
+var Msg = map[int]bool{
+	models.Passed: true,
+	models.Reject: true,
+}
 
 type WxMessage struct {
 	Name string
@@ -25,6 +29,8 @@ type WxMessage struct {
 }
 
 func Send(data *models.C_Apply) {
+	if !Msg[data.ApplyStatus] { return }
+
 	t := time.Unix(data.ApplyDate, 0)
 	m := WxMessage{
 		Name: data.Name,
