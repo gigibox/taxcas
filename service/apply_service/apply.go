@@ -66,7 +66,7 @@ func (this *S_Apply) Update() (bool, error) {
 }
 
 func (this *S_Apply) UpdateStatus() (bool) {
-		statusCode := this.Data.ApplyStatus
+		payStatus  := this.Data.PayStatus
 
 		// 根据身份证号 更新申请订单状态
 		if ok , err := models.MgoUpdate("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data); !ok {
@@ -75,7 +75,7 @@ func (this *S_Apply) UpdateStatus() (bool) {
 		}
 
 		// 判断为退款请求, 发起退款申请
-		if statusCode == models.Refunded {
+		if payStatus == models.Refunded {
 			if ok, err := weixin_service.WXPayRefund(this.Data.PayOrder); !ok {
 				logging.Error("Pay order: %s, Refund failure: %s", this.Data.PayOrder, err)
 				return false
@@ -259,6 +259,9 @@ func ExportFile(certid, act string) (string, error) {
 func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 	var succeed, failure int
 
+	// 手动拒绝参数为身份证号数组
+	pidArry := pids
+
 	statusCode, ok := models.ActionMsg[act]
 	if !ok {
 		return succeed, failure
@@ -270,9 +273,8 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 		Collection: "cert" + certid + "_apply",
 	}
 
-	// 根据导入数据处理
+	// 解析csv文件
 	if file != "" {
-		// 解析cav文件
 		f, err := os.Open(file)
 		if err != nil {
 			logging.Error(err)
@@ -285,6 +287,7 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 		// 跳过第一行
 		reader.Read()
 
+		pidArry = []string{}
 		for {
 			record, err := reader.Read()
 			if err == io.EOF {
@@ -295,41 +298,26 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 				continue
 			}
 
-			// 去除空格和制表符
-			pid := util.CompressStr(record[3])
+			// 去除空格和制表符, 读取身份证号
+			pidArry = append(pidArry, util.CompressStr(record[3]))
+		}
 
-			if ext, _ := GetApplyByPID(certid, pid, &applyService.Data); !ext {
-				failure ++
-				continue
-			}
+	}
 
+	for i := range pidArry{
+		if ext, _ := GetApplyByPID(certid, pidArry[i], &applyService.Data); !ext {
+			failure ++
+			continue
+		}
+
+		// 避免重复导入
+		if applyService.Data.ApplyStatusMsg != statusMsg {
 			applyService.Data.ApplyStatusMsg = statusMsg
+
+			// 如果是已拒绝状态, 申请状态不改变
 			if applyService.Data.ApplyStatus != models.Reject {
 				applyService.Data.ApplyStatus = statusCode
 			}
-
-			// 更新退款状态
-			if statusCode == models.Refunded {
-				applyService.Data.PayTime = time.Now().Unix()
-				applyService.Data.PayStatus = statusCode
-			}
-
-			if ok := applyService.UpdateStatus(); ok {
-				succeed ++
-			} else {
-				failure ++
-			}
-		}
-	} else {
-		// 手动选择
-		for i := range pids{
-			if ext, _ := GetApplyByPID(certid, pids[i], &applyService.Data); !ext {
-				failure ++
-				continue
-			}
-
-			applyService.Data.ApplyStatus = statusCode
-			applyService.Data.ApplyStatusMsg = statusMsg
 
 			// 更新退款状态
 			if statusCode == models.Refunded {
