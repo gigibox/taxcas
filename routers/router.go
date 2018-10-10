@@ -5,6 +5,7 @@ import (
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"net/http"
 	"taxcas/middleware/cors"
+	"taxcas/middleware/jwt"
 	"taxcas/routers/api/admin"
 	"taxcas/routers/api/user"
 	"taxcas/routers/api/weixin"
@@ -45,6 +46,7 @@ func InitRouter() *gin.Engine {
 	}
 
 	apiv1 := r.Group("/api/v1")
+	apiv1.Use(jwt.JWT())
 	{
 		// 获取字体
 		apiv1.GET("/admin/fonts", admin.GetFonts)
