@@ -265,7 +265,7 @@ func WXPayRefund(out_trade_no string) (bool, error) {
 // @Param   openid path string true "用户openid"
 // @Param   certid path string true "证书id"
 // @Success 200 {string} json "{"msg":string, "extra":}"
-// @Router  /api/v1/weixin/wxquery/{openid}/{certid} [get]
+// @Router  /api/v1/weixin/wxquery/{certid}/{openid} [get]
 func WXPayRefundQuery(c *gin.Context) {
 	appG := app.Gin{c}
 	openid := c.Param("openid")

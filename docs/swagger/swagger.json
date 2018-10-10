@@ -755,7 +755,7 @@
                 }
             }
         },
-        "/api/v1/weixin/wxquery/{openid}/{certid}": {
+        "/api/v1/weixin/wxquery/{certid}/{openid}": {
             "get": {
                 "security": [
                     {

@@ -88,7 +88,7 @@ func (this *Signer) Sign(input io.Reader, output io.Writer, design *ImageDesigne
 			// 设置字体, 字号
 			fontPath := upload.GetFontPath() + coords[i].Font
 			if _, err := os.Stat(fontPath); err != nil {
-				fontPath = upload.GetFontPath() + "default.ttc"
+				fontPath = upload.GetFontPath() + "微软雅黑"
 			}
 
 			this.SetFont(fontPath, coords[i].FontSize)

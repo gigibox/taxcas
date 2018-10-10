@@ -234,9 +234,10 @@ func ExportFile(certid, act string) (string, error) {
 	} else if code == models.Reject {
 		newCode = models.Refunding
 		newMsg = models.StatusMsg[newCode]
+		newTime := time.Now().Unix()
 
 		// 更新支付状态
-		newData = bson.M{"$set": bson.M{"paystatus": newCode, "applystatusmsg": newMsg}}
+		newData = bson.M{"$set": bson.M{"paystatus": newCode, "applystatusmsg": newMsg, "paytime": newTime}}
 	}
 
 	// 一次更新所有状态

@@ -108,17 +108,8 @@ func InitRouter() *gin.Engine {
 		// 微信服务端回调
 		public.POST("weixin/wxnotify", weixin.WXPayCallback)
 
-		// 申请退款
-		//apiv1.GET("weixin/wxrefund/:out_trade_no", weixin.WXPayRefund)
-
 		// 查询退款
-		apiv1.GET("weixin/wxquery/:openid/:certid", weixin.WXPayRefundQuery)
-
-		// 发送模板消息
-		//apiv1.GET("weixin/wxtemplate/:openid", weixin.WXSendTemplateMsg)
-
-		// 发送文本消息
-		//apiv1.GET("weixin/wxtext/:openid", weixin.WXSendText)
+		apiv1.GET("weixin/wxquery/:certid/:openid", user.GetApplicant)
 
 		// 查看证书
 		apiv1.GET("/weixin/e-certs/:certid/:openid", admin.UserCertificates)

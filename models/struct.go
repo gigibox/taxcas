@@ -103,7 +103,7 @@ type C_Apply struct {
 	PayAmount      int    `json:"pay_amount"`    // 支付金额
 	PayOrder       string `json:"pay_order"`     // 支付订单
 	PayStatus      int    `json:"pay_status"`    // 支付状态
-	PayTime        int64  `json:"pay_time"`      // 支付状态
+	PayTime        int64  `json:"pay_time"`      // 支付时间
 	SerialNumber   string `json:"serial_number"`   // 证书编号
 	ImageSaveUrl   string `json:"image_save_url"`
 	PDFSaveUrl     string `json:"pdf_save_url"`

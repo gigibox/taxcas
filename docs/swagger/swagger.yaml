@@ -607,7 +607,7 @@ paths:
       summary: 获取支付订单
       tags:
       - 微信公众号
-  /api/v1/weixin/wxquery/{openid}/{certid}:
+  /api/v1/weixin/wxquery/{certid}/{openid}:
     get:
       parameters:
       - description: 用户openid
