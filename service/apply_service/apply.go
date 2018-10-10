@@ -180,7 +180,7 @@ func ExportFile(certid, act string) (string, error) {
 
 	if len(docs) == 0 {
 		logging.Debug("Export csv File, condition not queried ")
-		return "", nil
+		return "none", nil
 	}
 
 	// 文件名: 证书名称-查询条件-日期.csv

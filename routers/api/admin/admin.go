@@ -277,6 +277,9 @@ func ExportApplicants(c *gin.Context) {
 	if filename == "" {
 		appG.Response(http.StatusOK, false, e.ERROR_EXPORT_FILE_FAIL, err)
 		return
+	} else if filename == "none" {
+		appG.Response(http.StatusOK, false, e.ERROR_EXPORT_EMPYT_FILE, err)
+		return
 	}
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
