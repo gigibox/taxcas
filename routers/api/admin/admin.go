@@ -321,12 +321,18 @@ func UpdateApplicants(c *gin.Context) {
 	}
 
 	// 解析审核结果
-	s, f := apply_service.UpdateApplicants(certid, params.Action, params.FilePath, params.Pids)
-
-	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]int{
-		"success" : s,
-		"failure" : f,
-	})
+	s, f, err := apply_service.UpdateApplicants(certid, params.Action, params.FilePath, params.Pids)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success":false, "msg":err.Error(), "data":map[string]int{
+			"success" : s,
+			"failure" : f,
+		},})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"success":true, "msg":err.Error(), "data":map[string]int{
+			"success" : s,
+			"failure" : f,
+		},})
+	}
 }
 
 // @Summary 查看用户证书

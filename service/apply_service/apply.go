@@ -2,6 +2,7 @@ package apply_service
 
 import (
 	"encoding/csv"
+	"errors"
 	"gopkg.in/mgo.v2/bson"
 	"io"
 	"os"
@@ -18,7 +19,7 @@ import (
 
 type S_Apply struct {
 	Collection string
-	Data models.C_Apply
+	Data       models.C_Apply
 }
 
 func (this *S_Apply) CheckApplyExistByWX() (bool, error) {
@@ -47,7 +48,7 @@ func (this *S_Apply) CheckApplyStatus() (bool, error) {
 	return false, nil
 }
 
-func (this *S_Apply) UpdateSerialNumber() (bool){
+func (this *S_Apply) UpdateSerialNumber() bool {
 	sn, ok := models.GenerateCertSN(this.Data.StudyDate, this.Data.Province, this.Data.CertID)
 	if !ok {
 		return false
@@ -62,26 +63,26 @@ func (this *S_Apply) Add() (bool, error) {
 }
 
 func (this *S_Apply) Update() (bool, error) {
-	return models.MgoUpdate("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data);
+	return models.MgoUpdate("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data)
 }
 
-func (this *S_Apply) UpdateStatus() (bool) {
-		// 根据身份证号 更新申请订单状态
-		if ok , err := models.MgoUpdate("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data); !ok {
-			logging.Debug("Update applicant status:", err)
-			return false
-		}
+func (this *S_Apply) UpdateStatus() bool {
+	// 根据身份证号 更新申请订单状态
+	if ok, err := models.MgoUpdate("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data); !ok {
+		logging.Debug("Update applicant status:", err)
+		return false
+	}
 
-		// 修改用户申请状态
-		user := models.User{
-			WechatID : this.Data.WechatID,
-		}
-		user_service.UpdateCerts(user, this.Data.CertID, this.Data.ApplyStatus)
+	// 修改用户申请状态
+	user := models.User{
+		WechatID: this.Data.WechatID,
+	}
+	user_service.UpdateCerts(user, this.Data.CertID, this.Data.ApplyStatus)
 
-		return true
+	return true
 }
 
-func New(col string, commit models.Applicant) (*S_Apply) {
+func New(col string, commit models.Applicant) *S_Apply {
 	return &S_Apply{
 		Collection: col,
 		Data: models.C_Apply{
@@ -100,7 +101,7 @@ func parseAction(action string) (string, interface{}) {
 	return "", nil
 }
 
-func GetApplyList(id, action string, page, limit int, ext string) (interface{}) {
+func GetApplyList(id, action string, page, limit int, ext string) interface{} {
 	doc := []models.C_Apply{}
 
 	if page > 0 {
@@ -109,7 +110,7 @@ func GetApplyList(id, action string, page, limit int, ext string) (interface{}) 
 
 	key, val := parseAction(action)
 
-	selecter :=	bson.M{key: val}
+	selecter := bson.M{key: val}
 
 	// 输入框查询, 18位为身份证号, 否则查询姓名
 	if ext != "" {
@@ -121,34 +122,35 @@ func GetApplyList(id, action string, page, limit int, ext string) (interface{}) 
 	}
 
 	// 统计符合条件的总数
-	count, _ := models.MgoCountQuery(selecter, "cert" + id + "_apply")
+	count, _ := models.MgoCountQuery(selecter, "cert"+id+"_apply")
 
 	// 查询
-	models.MgoFind(selecter, "cert" + id + "_apply", page, limit, &doc)
+	models.MgoFind(selecter, "cert"+id+"_apply", page, limit, &doc)
 
-	return map[string]interface{} {
+	return map[string]interface{}{
 		"count": count,
-		"list" : doc,
+		"list":  doc,
 	}
 }
 
 func GetApplyByPID(certid, pid string, doc *models.C_Apply) (bool, error) {
-	return models.MgoFindOne("applicant.user.personalid", pid, "cert" + certid + "_apply", doc)
+	return models.MgoFindOne("applicant.user.personalid", pid, "cert"+certid+"_apply", doc)
 }
 
 func GetApplyByOpenid(certid, openid string, doc *models.C_Apply) (bool, error) {
-	return models.MgoFindOne("applicant.user.wechatid", openid, "cert" + certid + "_apply", doc)
+	return models.MgoFindOne("applicant.user.wechatid", openid, "cert"+certid+"_apply", doc)
 }
 
 func GetApplyBySN(certid, sn string, doc *models.C_Apply) (bool, error) {
-	return models.MgoFindOne("serialnumber", sn, "cert" + certid + "_apply", doc)
+	return models.MgoFindOne("serialnumber", sn, "cert"+certid+"_apply", doc)
 }
 
 // 根据请求类型判断需要导出的字段
-var title = map[string][]string {
-	"export" : []string{"编号", "申请证书", "申请人", "身份证号", "申请时间", "支付金额"},
-	"reject" : []string{"编号", "申请证书", "申请人", "身份证号", "申请时间", "支付金额"},
+var title = map[string][]string{
+	"export": []string{"编号", "申请证书", "申请人", "身份证号", "申请时间", "支付金额"},
+	"reject": []string{"编号", "申请证书", "申请人", "身份证号", "申请时间", "支付金额"},
 }
+
 func ExportFile(certid, act string) (string, error) {
 	code, ok := models.ActionMsg[act]
 	if !ok {
@@ -164,7 +166,7 @@ func ExportFile(certid, act string) (string, error) {
 	}
 
 	docs := []models.C_Apply{}
-	models.MgoFind(selecter, "cert" + certid + "_apply", 0, 0, &docs)
+	models.MgoFind(selecter, "cert"+certid+"_apply", 0, 0, &docs)
 
 	if len(docs) == 0 {
 		logging.Debug("Export csv File, condition not queried ")
@@ -173,12 +175,12 @@ func ExportFile(certid, act string) (string, error) {
 
 	// 文件名: 证书名称-查询条件-日期.csv
 	tm := time.Unix(time.Now().Unix(), 0)
-	filecsv := export.GetExportExcelPath() + docs[0].CertName + "-" + models.StatusMsg[code] + "-" +  tm.Format("20060102") + ".csv"
+	filecsv := export.GetExportExcelPath() + docs[0].CertName + "-" + models.StatusMsg[code] + "-" + tm.Format("20060102") + ".csv"
 
 	// 创建 csv 文件
 	f, err := os.Create(export.GetRuntimePath() + filecsv)
 	if err != nil {
-		logging.Error("Creat csv file fail: ",err)
+		logging.Error("Creat csv file fail: ", err)
 		return "", err
 	}
 	defer f.Close()
@@ -210,7 +212,7 @@ func ExportFile(certid, act string) (string, error) {
 
 	// 更新申请状态
 	var newCode int
-	var newMsg  string
+	var newMsg string
 	var newData bson.M
 
 	if code == models.Pending {
@@ -229,14 +231,14 @@ func ExportFile(certid, act string) (string, error) {
 	}
 
 	// 一次更新所有状态
-	if ok, err := models.MgoUpdateAll(selecter, "cert" + certid + "_apply", newData); !ok {
+	if ok, err := models.MgoUpdateAll(selecter, "cert"+certid+"_apply", newData); !ok {
 		logging.Error("Update all apply status failure: ", err)
 	}
 
 	// 更新用户表状态
 	for i := range docs {
 		user := models.User{
-			WechatID : docs[i].WechatID,
+			WechatID: docs[i].WechatID,
 		}
 		user_service.UpdateCerts(user, certid, newCode)
 	}
@@ -244,7 +246,7 @@ func ExportFile(certid, act string) (string, error) {
 	return filecsv, err
 }
 
-func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
+func UpdateApplicants(certid, act, file string, pids []string) (int, int, error) {
 	var succeed, failure int
 
 	// 手动拒绝参数为身份证号数组
@@ -255,7 +257,7 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 		f, err := os.Open(file)
 		if err != nil {
 			logging.Error(err)
-			return 0, 0
+			return succeed, failure, errors.New("导入文件存在错误")
 		}
 		defer f.Close()
 
@@ -271,8 +273,8 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 				break
 			} else if nil != err {
 				logging.Error(err)
-				failure ++
-				continue
+				failure++
+				return succeed, failure, errors.New("导入文件解析错误")
 			}
 
 			// 去除空格和制表符, 读取身份证号
@@ -282,7 +284,7 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 
 	statusCode, ok := models.ActionMsg[act]
 	if !ok {
-		return succeed, failure
+		return succeed, failure, errors.New("请求类型错误")
 	}
 
 	statusMsg := models.StatusMsg[statusCode]
@@ -291,9 +293,9 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 		Collection: "cert" + certid + "_apply",
 	}
 
-	for i := range pidArry{
+	for i := range pidArry {
 		if ext, _ := GetApplyByPID(certid, pidArry[i], &applyService.Data); !ext {
-			failure ++
+			failure++
 			continue
 		}
 
@@ -316,8 +318,8 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 			if statusCode == models.Refunded && applyService.Data.PayOrder != "" {
 				if ok, err := weixin_service.WXPayRefund(applyService.Data.PayOrder); !ok {
 					logging.Error("Pay order: %s, Refund failure: %s", applyService.Data.PayOrder, err)
-					failure ++
-					continue
+					failure++
+					return succeed, failure, err
 				}
 			}
 
@@ -325,13 +327,13 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 			msg_service.Send(statusCode, &applyService.Data)
 
 			if ok := applyService.UpdateStatus(); ok {
-				succeed ++
+				succeed++
 			} else {
-				failure ++
+				failure++
 			}
 
 		}
 	}
 
-	return succeed, failure
+	return succeed, failure, nil
 }
