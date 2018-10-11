@@ -330,7 +330,7 @@ func UpdateApplicants(c *gin.Context) {
 			"failure": f,
 		}})
 	} else {
-		c.JSON(http.StatusOK, gin.H{"success": true, "msg": err.Error(), "data": map[string]int{
+		c.JSON(http.StatusOK, gin.H{"success": true, "msg": "ok", "data": map[string]int{
 			"success": s,
 			"failure": f,
 		}})
