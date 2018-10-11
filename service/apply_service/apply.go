@@ -147,6 +147,7 @@ func GetApplyBySN(certid, sn string, doc *models.C_Apply) (bool, error) {
 // 根据请求类型判断需要导出的字段
 var title = map[string][]string {
 	"export" : []string{"编号", "申请证书", "申请人", "身份证号", "申请时间", "支付金额"},
+	"reject" : []string{"编号", "申请证书", "申请人", "身份证号", "申请时间", "支付金额"},
 }
 func ExportFile(certid, act string) (string, error) {
 	code, ok := models.ActionMsg[act]
@@ -249,17 +250,6 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 	// 手动拒绝参数为身份证号数组
 	pidArry := pids
 
-	statusCode, ok := models.ActionMsg[act]
-	if !ok {
-		return succeed, failure
-	}
-
-	statusMsg := models.StatusMsg[statusCode]
-
-	applyService := S_Apply{
-		Collection: "cert" + certid + "_apply",
-	}
-
 	// 解析csv文件
 	if file != "" {
 		f, err := os.Open(file)
@@ -288,6 +278,17 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 			// 去除空格和制表符, 读取身份证号
 			pidArry = append(pidArry, util.CompressStr(record[3]))
 		}
+	}
+
+	statusCode, ok := models.ActionMsg[act]
+	if !ok {
+		return succeed, failure
+	}
+
+	statusMsg := models.StatusMsg[statusCode]
+
+	applyService := S_Apply{
+		Collection: "cert" + certid + "_apply",
 	}
 
 	for i := range pidArry{
