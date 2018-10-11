@@ -28,8 +28,8 @@ type WxMessage struct {
 	Openid string
 }
 
-func Send(data *models.C_Apply) {
-	if !Msg[data.ApplyStatus] { return }
+func Send(act int, data *models.C_Apply) {
+	if !Msg[act] { return }
 
 	t := time.Unix(data.ApplyDate, 0)
 	m := WxMessage{
@@ -41,7 +41,7 @@ func Send(data *models.C_Apply) {
 	}
 
 	msg := PassedMsg
-	if data.ApplyStatus == models.Reject {
+	if act == models.Reject {
 		msg = RejectMsg
 		if data.PayAmount > 0 {
 			msg = RefundMsg

@@ -66,20 +66,10 @@ func (this *S_Apply) Update() (bool, error) {
 }
 
 func (this *S_Apply) UpdateStatus() (bool) {
-		payStatus  := this.Data.PayStatus
-
 		// 根据身份证号 更新申请订单状态
 		if ok , err := models.MgoUpdate("applicant.user.personalid", this.Data.PersonalID, this.Collection, this.Data); !ok {
 			logging.Debug("Update applicant status:", err)
 			return false
-		}
-
-		// 判断为退款请求, 发起退款申请
-		if payStatus == models.Refunded {
-			if ok, err := weixin_service.WXPayRefund(this.Data.PayOrder); !ok {
-				logging.Error("Pay order: %s, Refund failure: %s", this.Data.PayOrder, err)
-				return false
-			}
 		}
 
 		// 修改用户申请状态
@@ -87,9 +77,6 @@ func (this *S_Apply) UpdateStatus() (bool) {
 			WechatID : this.Data.WechatID,
 		}
 		user_service.UpdateCerts(user, this.Data.CertID, this.Data.ApplyStatus)
-
-		// 推送微信提醒
-		msg_service.Send(&this.Data)
 
 		return true
 }
@@ -301,7 +288,6 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 			// 去除空格和制表符, 读取身份证号
 			pidArry = append(pidArry, util.CompressStr(record[3]))
 		}
-
 	}
 
 	for i := range pidArry{
@@ -325,11 +311,24 @@ func UpdateApplicants(certid, act, file string, pids []string) (int, int) {
 				applyService.Data.PayStatus = statusCode
 			}
 
+			// 判断为退款请求, 发起退款申请
+			if statusCode == models.Refunded && applyService.Data.PayOrder != "" {
+				if ok, err := weixin_service.WXPayRefund(applyService.Data.PayOrder); !ok {
+					logging.Error("Pay order: %s, Refund failure: %s", applyService.Data.PayOrder, err)
+					failure ++
+					continue
+				}
+			}
+
+			// 推送微信提醒
+			msg_service.Send(statusCode, &applyService.Data)
+
 			if ok := applyService.UpdateStatus(); ok {
 				succeed ++
 			} else {
 				failure ++
 			}
+
 		}
 	}
 
