@@ -33,12 +33,12 @@ var ActionMsg = map[string]int{
 }
 
 type Coord struct {
-	Str      string
-	Font     string  `json:"font" form:"font"`
-	FontSize float64 `json:"font_size" form:"font_size"`
-	TextAlign string `json:"text_align" form:"text_align"`
-	X        int
-	Y        int
+	Str       string
+	Font      string  `json:"font" form:"font"`
+	FontSize  float64 `json:"font_size" form:"font_size"`
+	TextAlign string  `json:"text_align" form:"text_align"`
+	X         int
+	Y         int
 }
 
 // 绘图位置
@@ -104,7 +104,7 @@ type C_Apply struct {
 	PayOrder       string `json:"pay_order"`     // 支付订单
 	PayStatus      int    `json:"pay_status"`    // 支付状态
 	PayTime        int64  `json:"pay_time"`      // 支付时间
-	SerialNumber   string `json:"serial_number"`   // 证书编号
+	SerialNumber   string `json:"serial_number"` // 证书编号
 	ImageSaveUrl   string `json:"image_save_url"`
 	PDFSaveUrl     string `json:"pdf_save_url"`
 	ApplyStatus    int    `json:"apply_status"`     // 申请状态

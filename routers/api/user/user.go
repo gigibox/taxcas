@@ -42,7 +42,7 @@ func ApplyForCert(c *gin.Context) {
 		return
 	}
 
-	applyService := apply_service.New("cert" + commit.CertID + "_apply", commit)
+	applyService := apply_service.New("cert"+commit.CertID+"_apply", commit)
 
 	// 判断证书是否存在, 或关闭申请
 	isExist, err := applyService.CheckCertByName()
@@ -128,7 +128,7 @@ func GetUserInfo(c *gin.Context) {
 
 	user := models.C_users{}
 
-	openid	:= c.Param("openid")
+	openid := c.Param("openid")
 
 	if ok, err := user_service.GetUser(openid, &user); !ok {
 		appG.Response(http.StatusOK, false, e.ERROR_NOT_EXIST_USER, err)

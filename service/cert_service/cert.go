@@ -4,6 +4,7 @@ import "C"
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"taxcas/models"
 	"taxcas/pkg/export"
 	"taxcas/pkg/logging"
@@ -14,7 +15,7 @@ import (
 
 type S_cert struct {
 	Collection string
-	Data models.C_certs
+	Data       models.C_certs
 }
 
 const (
@@ -44,10 +45,10 @@ func (this *S_cert) Edit() (bool, error) {
 	return models.MgoUpdate("certid", this.Data.CertID, "certs", this.Data)
 }
 
-func GetAllCertName() (interface{}) {
+func GetAllCertName() interface{} {
 	type simpleCert struct {
-		Id string `json:"cert_id"`
-		Name string `json:"cert_name"`
+		Id     string `json:"cert_id"`
+		Name   string `json:"cert_name"`
 		Status string `json:"status"`
 	}
 
@@ -56,14 +57,14 @@ func GetAllCertName() (interface{}) {
 
 	models.MgoFindAll(col_certs, &result)
 	for i, _ := range result {
-		t := simpleCert{Id:result[i].CertID, Name:result[i].CertName, Status:result[i].Status}
+		t := simpleCert{Id: result[i].CertID, Name: result[i].CertName, Status: result[i].Status}
 		certs = append(certs, t)
 	}
 
 	return certs
 }
 
-func GetCertsList() (interface{}) {
+func GetCertsList() interface{} {
 	result := []models.C_certs{}
 
 	models.MgoFindAll(col_certs, &result)
@@ -91,14 +92,14 @@ func GetCertFile(apply *models.C_Apply) (string, error) {
 	// 检查并创建文件夹
 	util.CheckDir(export.GetRuntimePath() + export.GetExportPDFPath(apply.CertID))
 
-	if err := models.Image2PDF(export.GetRuntimePath() + filePDF, export.GetRuntimePath() + apply.ImageSaveUrl); err != nil {
+	if err := models.Image2PDF(export.GetRuntimePath()+filePDF, export.GetRuntimePath()+apply.ImageSaveUrl); err != nil {
 		logging.Warn(err)
 		return "", err
 	}
 
 	// 更新电子证书图片信息
 	apply.PDFSaveUrl = filePDF
-	if ok , err := models.MgoUpsert("applicant.user.personalid", apply.PersonalID, "cert" + apply.CertID + "_apply", apply); !ok {
+	if ok, err := models.MgoUpsert("applicant.user.personalid", apply.PersonalID, "cert"+apply.CertID+"_apply", apply); !ok {
 		logging.Warn("Update applicant status:", err)
 	}
 
@@ -119,7 +120,7 @@ func GetCertImage(design *models.ImageDesigner, apply *models.C_Apply) (string, 
 		}
 	} else {
 		// 获取/生成用户证书
-		cert  := models.C_certs{}
+		cert := models.C_certs{}
 		GetCertByID(apply.CertID, &cert)
 
 		// 已存在
@@ -130,11 +131,11 @@ func GetCertImage(design *models.ImageDesigner, apply *models.C_Apply) (string, 
 		// 生成
 		at := time.Unix(apply.ApplyDate, 0)
 		designer := cert.ImageDesign
-		designer.Name.Str			= apply.Name
-		designer.EnglishName.Str 	= apply.EnglishName
-		designer.PersonalID.Str		= apply.PersonalID
-		designer.SerialNumber.Str	= apply.SerialNumber
-		designer.Date.Str			= fmt.Sprintf("%d        %d       %d", at.Year(), at.Month(), at.Day())
+		designer.Name.Str = strings.TrimSpace(strings.Replace(apply.Name, "", " ", -1)) // 添加空格
+		designer.EnglishName.Str = apply.EnglishName
+		designer.PersonalID.Str = apply.PersonalID
+		designer.SerialNumber.Str = apply.SerialNumber
+		designer.Date.Str = fmt.Sprintf("%d       %d       %d", at.Year(), at.Month(), at.Day())
 
 		image = export.GetExportImagePath(apply.CertID) + apply.SerialNumber + ".png"
 
@@ -148,7 +149,7 @@ func GetCertImage(design *models.ImageDesigner, apply *models.C_Apply) (string, 
 
 		// 更新电子证书图片信息
 		apply.ImageSaveUrl = image
-		if ok , err := models.MgoUpsert("applicant.user.personalid", apply.PersonalID, "cert" + apply.CertID + "_apply", apply); !ok {
+		if ok, err := models.MgoUpsert("applicant.user.personalid", apply.PersonalID, "cert"+apply.CertID+"_apply", apply); !ok {
 			logging.Warn("Update applicant status:", err)
 		}
 	}

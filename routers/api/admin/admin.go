@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"fmt"
 	"github.com/Unknwon/com"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
@@ -13,6 +14,7 @@ import (
 	"taxcas/pkg/util"
 	"taxcas/service/apply_service"
 	"taxcas/service/cert_service"
+	"time"
 )
 
 // @Summary 	获取证书列表
@@ -42,10 +44,10 @@ func GetCertsList(c *gin.Context) {
 func GetApplicantList(c *gin.Context) {
 	appG := app.Gin{c}
 
-	id    := c.Param("certid")
-	act   := c.Query("type")
-	fie   := c.Query("field")
-	page  := com.StrTo(c.Query("page")).MustInt()
+	id := c.Param("certid")
+	act := c.Query("type")
+	fie := c.Query("field")
+	page := com.StrTo(c.Query("page")).MustInt()
 	limit := com.StrTo(c.Query("limit")).MustInt()
 
 	if notExist, _ := cert_service.CheckExistByID(id); notExist {
@@ -88,7 +90,6 @@ func AddCert(c *gin.Context) {
 		appG.Response(http.StatusOK, false, e.ERROR_EXIST_CERT, nil)
 		return
 	}
-
 
 	isAdded, err := certService.Add()
 
@@ -144,11 +145,12 @@ func PreviewImage(c *gin.Context) {
 		return
 	}
 
-	cert.ImageDesign.Name.Str = "李雷"
-	cert.ImageDesign.EnglishName.Str = "LiLei"
+	at := time.Now()
+	cert.ImageDesign.Name.Str = "李 雷"
+	cert.ImageDesign.EnglishName.Str = "Li Lei"
 	cert.ImageDesign.PersonalID.Str = "123456197805043210"
 	cert.ImageDesign.SerialNumber.Str = "20181000123456"
-	cert.ImageDesign.Date.Str = "2018      10      9"
+	cert.ImageDesign.Date.Str = fmt.Sprintf("%d       %d       %d", at.Year(), at.Month(), at.Day())
 
 	image, err := cert_service.GetCertImage(&cert.ImageDesign, nil)
 	if err != nil {
@@ -197,14 +199,14 @@ func UploadImage(c *gin.Context) {
 	}
 
 	imageName := util.GetRandomFileName(image.Filename)
-	fullPath  := upload.GetImageFullPath()
+	fullPath := upload.GetImageFullPath()
 
 	if !upload.CheckImageExt(imageName) || !upload.CheckFileSize(file) {
 		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_CHECK_IMAGE_FORMAT, nil)
 		return
 	}
 
-	if err := c.SaveUploadedFile(image, fullPath + imageName); err != nil {
+	if err := c.SaveUploadedFile(image, fullPath+imageName); err != nil {
 		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_SAVE_IMAGE_FAIL, err)
 		return
@@ -244,7 +246,7 @@ func UploadExcel(c *gin.Context) {
 		return
 	}
 
-	if err := c.SaveUploadedFile(excel, fullPath + saveName); err != nil {
+	if err := c.SaveUploadedFile(excel, fullPath+saveName); err != nil {
 		logging.Warn(err)
 		appG.Response(http.StatusOK, false, e.ERROR_UPLOAD_SAVE_FILE_FAIL, err)
 		return
@@ -283,15 +285,15 @@ func ExportApplicants(c *gin.Context) {
 	}
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
-		"file_url":      util.GetAppFullUrl(filename),
+		"file_url":       util.GetAppFullUrl(filename),
 		"file_save_path": filename,
 	})
 }
 
 type parameters struct {
-	FilePath    string `json:"file_path"`
-	Action      string `json:"action"`
-	Pids        []string `json:"pids"`
+	FilePath string   `json:"file_path"`
+	Action   string   `json:"action"`
+	Pids     []string `json:"pids"`
 }
 
 // @Summary  执行审核结果
@@ -323,15 +325,15 @@ func UpdateApplicants(c *gin.Context) {
 	// 解析审核结果
 	s, f, err := apply_service.UpdateApplicants(certid, params.Action, params.FilePath, params.Pids)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success":false, "msg":err.Error(), "data":map[string]int{
-			"success" : s,
-			"failure" : f,
-		},})
+		c.JSON(http.StatusOK, gin.H{"success": false, "msg": err.Error(), "data": map[string]int{
+			"success": s,
+			"failure": f,
+		}})
 	} else {
-		c.JSON(http.StatusOK, gin.H{"success":true, "msg":err.Error(), "data":map[string]int{
-			"success" : s,
-			"failure" : f,
-		},})
+		c.JSON(http.StatusOK, gin.H{"success": true, "msg": err.Error(), "data": map[string]int{
+			"success": s,
+			"failure": f,
+		}})
 	}
 }
 
@@ -348,7 +350,7 @@ func UserCertificates(c *gin.Context) {
 	openid := c.Param("openid")
 
 	apply := models.C_Apply{}
-	if certid == "" || openid== ""{
+	if certid == "" || openid == "" {
 		appG.Response(http.StatusBadRequest, false, e.INVALID_PARAMS, nil)
 		return
 	}
@@ -412,13 +414,13 @@ func OfficialWebsite(c *gin.Context) {
 	}
 
 	appG.Response(http.StatusOK, true, e.SUCCESS, map[string]string{
-		"cert_name":     apply.CertName,
-		"cert_sn":       apply.SerialNumber,
-		"user_name":     apply.Name,
-		"user_id":       apply.PersonalID,
-		"pdf_url":       util.GetAppFullUrl(pdf),
-		"image_url":     util.GetAppFullUrl(image),
-		"pdf_save_path": pdf,
+		"cert_name":       apply.CertName,
+		"cert_sn":         apply.SerialNumber,
+		"user_name":       apply.Name,
+		"user_id":         apply.PersonalID,
+		"pdf_url":         util.GetAppFullUrl(pdf),
+		"image_url":       util.GetAppFullUrl(image),
+		"pdf_save_path":   pdf,
 		"image_save_path": image,
 	})
 }
@@ -431,7 +433,6 @@ func GetCertsName(c *gin.Context) {
 	appG := app.Gin{c}
 	appG.Response(http.StatusOK, true, e.SUCCESS, cert_service.GetAllCertName())
 }
-
 
 // @Summary 查看用户证书
 // @Tags 	微信公众号
