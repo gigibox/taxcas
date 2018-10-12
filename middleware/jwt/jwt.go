@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -28,25 +29,23 @@ func JWT() gin.HandlerFunc {
 			token := kv[1]
 			claims, err := util.ParseToken(token)
 			if err != nil {
-				code = e.ERROR_AUTH
+				code = e.ERROR_AUTH_TOKEN
+				log.Println(err)
 			} else if !strings.Contains(c.Request.RequestURI, claims.Permission) {
 				code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
-				httpCode = http.StatusForbidden
-			} else if nowTime > claims.ExpiresAt {
-				code = e.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
 				httpCode = http.StatusForbidden
 			} else if nowTime > claims.RefeshTime {
 				c.Header("Authorization", util.RefreshToken(token))
 			} else {
-				;
+
 			}
 		}
 
 		if code != e.SUCCESS {
 			c.JSON(httpCode, gin.H{
 				"success": false,
-				"msg":  e.GetMsg(code),
-				"data": nil,
+				"msg":     e.GetMsg(code),
+				"data":    nil,
 			})
 
 			c.Abort()
