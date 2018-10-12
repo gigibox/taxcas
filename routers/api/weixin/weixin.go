@@ -211,7 +211,7 @@ func WXPayCallback(c *gin.Context) {
 			}
 
 			apply_service.GetApplyByOpenid(mr.Attach, mr.Openid, &applyService.Data)
-			applyService.Data.PayAmount = float64(mr.Total_fee / 100)
+			applyService.Data.PayAmount = float64(mr.Total_fee) / 100.0
 			applyService.Data.PayTime = time.Now().Unix()
 			applyService.Data.ApplyStatus = models.Pending
 			applyService.Data.PayStatus = models.Paid
