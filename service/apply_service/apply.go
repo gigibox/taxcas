@@ -202,7 +202,7 @@ func ExportFile(certid, act string) (string, error) {
 			docs[i].Name,
 			docs[i].PersonalID + "\t",
 			docs[i].StudyDate,
-			strconv.Itoa(docs[i].PayAmount),
+			strconv.FormatFloat(docs[i].PayAmount, 'E', -1, 64),
 		}
 
 		data = append(data, row)

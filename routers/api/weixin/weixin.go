@@ -154,7 +154,7 @@ func WXPayUnifyOrderReq(c *gin.Context) {
 		applyService.Data.ApplyStatus = models.Pending
 		applyService.Data.ApplyStatusMsg = models.StatusMsg[models.Pending]
 
-		appG.Response(http.StatusOK, true, e.SUCCESS, map[string]int{
+		appG.Response(http.StatusOK, true, e.SUCCESS, map[string]float64{
 			"price": price,
 		})
 	}
@@ -211,7 +211,7 @@ func WXPayCallback(c *gin.Context) {
 			}
 
 			apply_service.GetApplyByOpenid(mr.Attach, mr.Openid, &applyService.Data)
-			applyService.Data.PayAmount = mr.Total_fee / 100
+			applyService.Data.PayAmount = float64(mr.Total_fee / 100)
 			applyService.Data.PayTime = time.Now().Unix()
 			applyService.Data.ApplyStatus = models.Pending
 			applyService.Data.PayStatus = models.Paid

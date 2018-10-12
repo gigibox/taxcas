@@ -80,7 +80,7 @@ type C_certs struct {
 	CertID      string        `json:"cert_id" form:"cert_id"`                      // 证书索引
 	CertName    string        `json:"cert_name" form:"cert_name" valid:"Required"` // 证书名称
 	Authority   string        `json:"authority" form:"authority"`                  // 证书颁发机构
-	Price       int           `json:"price" form:"price"`                          // 申请费用
+	Price       float64       `json:"price" form:"price"`                          // 申请费用
 	Status      string        `json:"status" form:"status"`                        // 申请状态
 	ImageDesign ImageDesigner `json:"image_design"`                                // 内容位置
 }
@@ -100,16 +100,16 @@ type C_users struct {
 // 证书申领流水
 type C_Apply struct {
 	Applicant
-	PayAmount      int    `json:"pay_amount"`    // 支付金额
-	PayOrder       string `json:"pay_order"`     // 支付订单
-	PayStatus      int    `json:"pay_status"`    // 支付状态
-	PayTime        int64  `json:"pay_time"`      // 支付时间
-	SerialNumber   string `json:"serial_number"` // 证书编号
-	ImageSaveUrl   string `json:"image_save_url"`
-	PDFSaveUrl     string `json:"pdf_save_url"`
-	ApplyStatus    int    `json:"apply_status"`     // 申请状态
-	ApplyStatusMsg string `json:"apply_status_msg"` // 申请状态信息
-	ApplyDate      int64  `json:"apply_date"`       // 申请时间
+	PayAmount      float64 `json:"pay_amount"`    // 支付金额
+	PayOrder       string  `json:"pay_order"`     // 支付订单
+	PayStatus      int     `json:"pay_status"`    // 支付状态
+	PayTime        int64   `json:"pay_time"`      // 支付时间
+	SerialNumber   string  `json:"serial_number"` // 证书编号
+	ImageSaveUrl   string  `json:"image_save_url"`
+	PDFSaveUrl     string  `json:"pdf_save_url"`
+	ApplyStatus    int     `json:"apply_status"`     // 申请状态
+	ApplyStatusMsg string  `json:"apply_status_msg"` // 申请状态信息
+	ApplyDate      int64   `json:"apply_date"`       // 申请时间
 }
 
 type WXPayNotifyReq struct {
