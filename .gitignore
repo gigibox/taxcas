@@ -1,5 +1,6 @@
 *.swp
 .idea
+taxcas
 runtime/*
 conf/app.ini
 runtime/fonts
